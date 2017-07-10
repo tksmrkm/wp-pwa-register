@@ -14,8 +14,7 @@ class Manifest
 
     public function addVar($vars)
     {
-        $vars['manifest'] = 1;
-        // var_dump($vars);
+        $vars[] = 'manifest';
         return $vars;
     }
 
