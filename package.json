@@ -1,0 +1,18 @@
+{
+  "name": "wp-pwa-register",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "C:/xampp/htdocs/temp.apptimes.net/wordpress/wp-content/plugins/../../../../wordpress/wp-content/plugins/wp-pwa-register",
+  "author": "tksmrkm <nis.murakami@gmail.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "babel-core": "^6.25.0",
+    "babel-loader": "^7.1.1",
+    "babel-preset-es2015": "^6.24.1",
+    "webpack": "^3.1.0"
+  },
+  "scripts": {
+    "js:build": "webpack -p --config config/webpack.config.production.js",
+    "js:watch": "webpack -w --config config/webpack.config.development.js"
+  }
+}
