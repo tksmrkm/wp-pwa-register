@@ -2,6 +2,9 @@
 
 namespace WpPwaRegister;
 
+const ROOT = __DIR__;
+const DS = DIRECTORY_SEPARATOR;
+
 /*
 Plugin Name: WP PWA Register
 Description: WordpressにPWA(Progressive Web Apps)を適用させる。

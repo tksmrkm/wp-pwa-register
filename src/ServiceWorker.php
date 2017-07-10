@@ -21,6 +21,8 @@ class ServiceWorker
     public function redirect()
     {
         if ($serviceWorker = get_query_var('service-worker')) {
+            header('Content-Type: application/javascript; charset=UTF-8');
+            require_once ROOT . DS . 'templates' . DS . 'service-worker.js';
             exit;
         }
     }

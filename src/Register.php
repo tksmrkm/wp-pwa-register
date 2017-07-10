@@ -20,11 +20,10 @@ class Register
 
     public function redirect()
     {
-        $register = get_query_var('register');
-        var_dump($register);
-        if ($register) {
-            error_log($register);
-            var_dump($register);
+        if ($register = get_query_var('register')) {
+            $var = 'sent from php value';
+            header('Content-Type: application/javascript; charset=UTF-8');
+            require_once ROOT . DS . 'templates' . DS . 'register.js';
             exit;
         }
     }

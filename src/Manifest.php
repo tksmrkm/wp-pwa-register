@@ -21,7 +21,8 @@ class Manifest
     public function redirect()
     {
         if ($manifest = get_query_var('manifest')) {
-            // var_dump($manifest, get_query_var('m'));
+            header('Content-Type: application/json; charset=UTF-8');
+            require_once ROOT . DS . 'templates' . DS . 'manifest.json';
             exit;
         }
     }
