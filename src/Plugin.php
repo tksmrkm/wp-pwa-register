@@ -12,6 +12,7 @@ class Plugin
         Register::getInstance();
         ServiceWorker::getInstance();
         Firebase::getInstance($container);
+        $this->customizer = $container['customizer'];
     }
 
     public function __construct($file)
@@ -42,6 +43,11 @@ class Plugin
             wp_enqueue_script('pwa-firebase', 'https://www.gstatic.com/firebasejs/4.1.3/firebase.js', [], null, true);
             wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), ['pwa-firebase'], VERSION, true);
         }
+
+        wp_localize_script('pwa-register', 'WP_REGISTER_SERVICE_WORKER', [
+            'root' => esc_url_raw(rest_url()),
+            'base64' => base64_encode($this->customizer->get_theme_mod('application-user') . ':' . $this->customizer->get_theme_mod('application-password'))
+        ]);
     }
 
     public function wpHead()

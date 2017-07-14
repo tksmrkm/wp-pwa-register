@@ -26,10 +26,36 @@ class Customizer
         ],
         'manifest' => [
             'title' => 'Manifest'
+        ],
+        'register' => [
+            'title' => 'Register'
         ]
     ];
 
     private $settings = [
+        'enable' => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'label' => '有効化',
+                'type' => 'checkbox'
+            ]
+        ],
+        'application-user' => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'Application User',
+                'description' => 'Appliation Passwords を使用するユーザー名'
+            ]
+        ],
+        'application-password' => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'Application Passwords',
+                'description' => 'Application Passwordsで発行されたパスワード'
+            ]
+        ],
         'sender-id' => [
             'control_option' => [
                 'section' => 'firebase',
