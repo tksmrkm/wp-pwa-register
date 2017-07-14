@@ -23,6 +23,9 @@ class Customizer
         ],
         'firebase' => [
             'title' => 'Firebase'
+        ],
+        'manifest' => [
+            'title' => 'Manifest'
         ]
     ];
 
@@ -49,6 +52,84 @@ class Customizer
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'Server Key'
+            ]
+        ],
+        'name' => [
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'Name'
+            ]
+        ],
+        'short_name' => [
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'ShortName'
+            ]
+        ],
+        'start-url' => [
+            'option' => [
+                'default' => '/'
+            ],
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'Start URL'
+            ]
+        ],
+        'display' => [
+            'option' => [
+                'default' => 'standalone'
+            ],
+            'control_option' => [
+                'section' => 'manifest',
+                'type' => 'select',
+                'choices' => [
+                    'standalone' => 'standalone',
+                    'fullscreen' => 'fullscreen',
+                    'minimal-ui' => 'minimal-ui',
+                    'browser' => 'browser'
+                ],
+                'label' => 'display'
+            ]
+        ],
+        'theme-color' => [
+            'option' => [
+                'default' => '#333'
+            ],
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'Theme Color'
+            ],
+            'control_class' => 'WP_Customize_Color_Control'
+        ],
+        'background-color' => [
+            'option' => [
+                'default' => '#FFF'
+            ],
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'Background Color'
+            ],
+            'control_class' => 'WP_Customize_Color_Control'
+        ],
+        'icon-src' => [
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'ICON src',
+                'description' => 'Same Origin, relative path from root (e.g.) /img/to/path.png'
+            ]
+        ],
+        'icon-sizes' => [
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'ICON sizes',
+                'description' => 'like as 152x152 316x316'
+            ]
+        ],
+        'icon-type' => [
+            'control_option' => [
+                'section' => 'manifest',
+                'label' => 'ICON type',
+                'description' => 'To specify the image type (e.g.) image/png'
             ]
         ]
     ];

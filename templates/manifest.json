@@ -1,2 +1,16 @@
 {
+    "name": "<?php echo $name; ?>",
+<?php if($shortName): ?>
+    "short_name": "<?php echo $shortName; ?>",
+<?php endif; ?>
+<?php if($icon): ?>
+    "icons": [
+        <?php echo $icon; ?>
+    ],
+<?php endif; ?>
+    "start_url": "<?php echo $startUrl; ?>",
+    "display": "<?php echo $display; ?>",
+    "theme_color": "<?php echo $themeColor; ?>",
+    "background_color": "<?php echo $backgroundColor; ?>",
+    "gcm_sender_id": "103953800507"
 }
