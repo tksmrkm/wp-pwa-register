@@ -12,6 +12,8 @@ class Plugin
         Register::getInstance();
         ServiceWorker::getInstance();
         Firebase::getInstance($container);
+        Posts::getInstance();
+
         $this->customizer = $container['customizer'];
     }
 

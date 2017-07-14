@@ -18,5 +18,6 @@ require_once 'src/Customizer.php';
 require_once 'src/Register.php';
 require_once 'src/ServiceWorker.php';
 require_once 'src/Firebase.php';
+require_once 'src/Posts.php';
 
 new Plugin(__FILE__);
