@@ -4,8 +4,20 @@ namespace WpPwaRegister;
 
 class Plugin
 {
+    private function prepare()
+    {
+        $container = [];
+        $container['customizer'] = Customizer::getInstance();
+        Manifest::getInstance();
+        Register::getInstance();
+        ServiceWorker::getInstance();
+        Firebase::getInstance($container);
+    }
+
     public function __construct($file)
     {
+        $this->prepare();
+
         register_deactivation_hook($file, 'flush_rewrite_rules');
         register_activation_hook($file, [$this, 'activate']);
         add_action('init', [$this, 'rewrite_rules']);
@@ -27,7 +39,7 @@ class Plugin
     public function enqueueScripts()
     {
         if ($this->valid()) {
-            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), [], VERSION, true);
+            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), ['firebase'], VERSION, true);
         }
     }
 

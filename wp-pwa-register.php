@@ -17,10 +17,6 @@ require_once 'src/Manifest.php';
 require_once 'src/Customizer.php';
 require_once 'src/Register.php';
 require_once 'src/ServiceWorker.php';
+require_once 'src/Firebase.php';
 
 new Plugin(__FILE__);
-
-Manifest::getInstance();
-Customizer::getInstance();
-Register::getInstance();
-ServiceWorker::getInstance();

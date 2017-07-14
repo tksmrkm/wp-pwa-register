@@ -5,9 +5,9 @@ namespace WpPwaRegister;
 trait Singleton
 {
     static private $instance;
-    private function __construct()
+    private function __construct($container)
     {
-        $this->init();
+        $this->init($container);
     }
 
     private function __clone()
@@ -15,17 +15,16 @@ trait Singleton
 
     }
 
-    static public function getInstance()
+    static public function getInstance($container = null)
     {
         if (!self::$instance) {
-            self::$instance = new self();
+            self::$instance = new self($container);
         }
 
         return self::$instance;
     }
 
-    public function init()
+    public function init($container)
     {
-
     }
 }
