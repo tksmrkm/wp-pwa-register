@@ -33,13 +33,14 @@ class Plugin
  */
     private function valid()
     {
-        return false;
+        return true;
     }
 
     public function enqueueScripts()
     {
         if ($this->valid()) {
-            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), ['firebase'], VERSION, true);
+            wp_enqueue_script('pwa-firebase', 'https://www.gstatic.com/firebasejs/4.1.3/firebase.js', [], null, true);
+            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), ['pwa-firebase'], VERSION, true);
         }
     }
 

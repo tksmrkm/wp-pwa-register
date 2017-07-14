@@ -10,15 +10,7 @@ class Firebase
     {
         $this->customizer = $container['customizer'];
 
-        add_action('wp_enqueue_scripts', [$this, 'enqueueScript']);
         add_filter('script_loader_tag', [$this, 'scriptLoader'], 10, 3);
-    }
-
-    public function enqueueScript()
-    {
-        $theme = wp_get_theme();
-
-        wp_enqueue_script('pwa-firebase', 'https://www.gstatic.com/firebasejs/4.1.3/firebase.js', [], null, true);
     }
 
     public function scriptLoader($tag, $handle, $src)
