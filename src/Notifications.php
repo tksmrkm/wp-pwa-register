@@ -130,7 +130,8 @@ class Notifications
             'get_callback' => function($object, $field_name, $request) {
                 $meta_fields = [
                     'link',
-                    'headline'
+                    'headline',
+                    'icon'
                 ];
                 $meta = [];
                 foreach ($meta_fields as $key) {
@@ -146,6 +147,7 @@ class Notifications
         if (isset($_GET['post_type']) && $_GET['post_type'] === 'pwa_notifications') {
             add_post_meta($post_id, 'link', '', true);
             add_post_meta($post_id, 'headline', '', true);
+            add_post_meta($post_id, 'icon', '', true);
         }
     }
 }

@@ -10,7 +10,7 @@ class Plugin
         $container['customizer'] = Customizer::getInstance();
         Manifest::getInstance($container);
         Register::getInstance();
-        ServiceWorker::getInstance();
+        ServiceWorker::getInstance($container);
         Firebase::getInstance($container);
         Posts::getInstance();
         Notifications::getInstance($container);
