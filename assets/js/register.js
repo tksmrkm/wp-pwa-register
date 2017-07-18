@@ -22,7 +22,8 @@ class Register
 
     requestPermission() {
         this.messaging.requestPermission()
-        .then(this.getToken.bind(this));
+        .then(this.getToken.bind(this))
+        .catch(this.error.bind(this));
     }
 
     getToken() {
@@ -57,7 +58,7 @@ class Register
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
         });
 
-        fetch(`${root}/wp-json/wp/v2/firebase_users`, {
+        fetch(`${root}/wp-json/wp/v2/pwa_users`, {
             method: 'POST',
             headers: headers,
             body: data
@@ -65,6 +66,7 @@ class Register
     }
 
     error(err) {
+        console.warn(err);
     }
 }
 
