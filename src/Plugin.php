@@ -13,6 +13,7 @@ class Plugin
         ServiceWorker::getInstance();
         Firebase::getInstance($container);
         Posts::getInstance();
+        Notifications::getInstance($container);
 
         $this->customizer = $container['customizer'];
     }
