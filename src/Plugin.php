@@ -14,6 +14,7 @@ class Plugin
         Firebase::getInstance($container);
         Posts::getInstance();
         Notifications::getInstance($container);
+        Users::getInstance();
 
         $this->customizer = $container['customizer'];
     }

@@ -28,7 +28,6 @@ class Posts
             'show_ui' => true,
             'supports' => [
                 'title',
-                'editor',
                 'custom-fields'
             ]
         ]);
