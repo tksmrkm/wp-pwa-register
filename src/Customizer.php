@@ -42,6 +42,15 @@ class Customizer
                 'type' => 'checkbox'
             ]
         ],
+        'enable-on-logged-in' => [
+            'option' => [
+                'default' => true
+            ],
+            'control_option' => [
+                'label' => 'ログイン時のみ有効化',
+                'type' => 'checkbox'
+            ]
+        ],
         'application-user' => [
             'control_option' => [
                 'section' => 'register',

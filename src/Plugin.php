@@ -4,6 +4,8 @@ namespace WpPwaRegister;
 
 class Plugin
 {
+    private $valid = null;
+
     private function prepare()
     {
         $container = [];
@@ -38,6 +40,31 @@ class Plugin
  */
     private function valid()
     {
+        if (!is_null($this->valid)) {
+            return $this->valid;
+        }
+        $this->valid = $this->customizer->get_theme_mod('enable', false)
+        && $this->enableOnLoggedIn()
+        && $this->customizer->get_theme_mod('application-user')
+        && $this->customizer->get_theme_mod('application-password')
+        && $this->customizer->get_theme_mod('sender-id')
+        && $this->customizer->get_theme_mod('api-key')
+        && $this->customizer->get_theme_mod('project-id')
+        && $this->customizer->get_theme_mod('server-key')
+        && $this->customizer->get_theme_mod('icon-src')
+        && $this->customizer->get_theme_mod('icon-sizes')
+        && $this->customizer->get_theme_mod('icon-type');
+        return $this->valid;
+    }
+
+    private function enableOnLoggedIn()
+    {
+        $flag = $this->customizer->get_theme_mod('enable-on-logged-in', true);
+
+        if ($flag) {
+            return is_user_logged_in();
+        }
+
         return true;
     }
 
