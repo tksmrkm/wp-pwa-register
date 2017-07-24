@@ -45,7 +45,7 @@ class Notifications
                 ]
             ]);
 
-            $error = $this->sendMessage($pwa_users, $post_id);
+            $error = $this->sendMessage($pwa_users, $post_id) ?: 0;
 
             update_post_meta($post_id, '_published_ever', true);
             update_post_meta($post_id, '_reach_success', $pwa_users->post_count - $error);
@@ -61,9 +61,9 @@ class Notifications
         ];
 
         foreach ($users->posts as $user) {
-            $content = json_decode($user->post_content);
-            if (isset($content->token)) {
-                $ids['endpoints'][] = $content->token;
+            $token = get_post_meta($user->ID, 'token', true);
+            if ($token) {
+                $ids['endpoints'][] = $token;
                 $ids['ids'][] = $user->post_title;
             }
         }
