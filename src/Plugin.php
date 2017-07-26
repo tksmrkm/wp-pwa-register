@@ -45,6 +45,7 @@ class Plugin
         }
         $this->valid = $this->customizer->get_theme_mod('enable', false)
         && $this->enableOnLoggedIn()
+        && $this->enableToRestrictOnIp()
         && $this->customizer->get_theme_mod('application-user')
         && $this->customizer->get_theme_mod('application-password')
         && $this->customizer->get_theme_mod('sender-id')
@@ -55,6 +56,20 @@ class Plugin
         && $this->customizer->get_theme_mod('icon-sizes')
         && $this->customizer->get_theme_mod('icon-type');
         return $this->valid;
+    }
+
+    private function enableToRestrictOnIp()
+    {
+        $flag = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
+        if ($flag) {
+            $remote_ip = $_SERVER['REMOTE_ADDR'];
+            list($accept_ip, $mask) = explode('/', $this->customizer->get_theme_mod('accepted-ip-address'));
+            $accept_long = ip2long($accept_ip) >> (32 - $mask);
+            $remote_long = ip2long($remote_ip) >> (32 - $mask);
+            return $accept_long === $remote_long;
+        }
+
+        return true;
     }
 
     private function enableOnLoggedIn()

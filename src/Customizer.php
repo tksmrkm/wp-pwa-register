@@ -51,6 +51,22 @@ class Customizer
                 'type' => 'checkbox'
             ]
         ],
+        'enable-to-restrict-on-ip' => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'label' => '有効化するIPを制限する',
+                'type' => 'checkbox'
+            ]
+        ],
+        'accepted-ip-address' => [
+            'option' => [],
+            'control_option' => [
+                'label' => '制限するIPアドレス',
+                'description' => '255.255.255.255/32'
+            ]
+        ],
         'application-user' => [
             'control_option' => [
                 'section' => 'register',
