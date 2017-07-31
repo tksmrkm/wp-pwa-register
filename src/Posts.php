@@ -58,8 +58,9 @@ class Posts
             'capabilities' => [
                 'read_post' => 'read',
                 'edit_post' => 'edit_others_posts',
-                'delete_post' => 'delete_others_posts',
                 'edit_posts' => 'edit_others_posts',
+                'delete_post' => 'delete_others_posts',
+                'delete_posts' => 'delete_others_posts',
                 'edit_others_posts' => 'edit_others_posts',
                 'publish_posts' => 'publish_posts',
                 'read_private_posts' => 'read_private_posts',
