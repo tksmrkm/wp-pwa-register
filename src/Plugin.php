@@ -120,7 +120,7 @@ class Plugin
     private function deleteUser()
     {
         $filename = ROOT . DS . 'userid';
-        file_exists($filename) {
+        if (file_exists($filename)) {
             $userId = file_get_contents($filename);
             wp_delete_user($userId);
             unlink($filename);
