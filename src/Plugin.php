@@ -48,7 +48,6 @@ class Plugin
         $this->valid = $this->customizer->get_theme_mod('enable', false)
         && $this->enableOnLoggedIn()
         && $this->enableToRestrictOnIp()
-        && $this->customizer->get_theme_mod('application-user')
         && $this->customizer->get_theme_mod('application-password')
         && $this->customizer->get_theme_mod('sender-id')
         && $this->customizer->get_theme_mod('api-key')
@@ -94,7 +93,7 @@ class Plugin
 
         wp_localize_script('pwa-register', 'WP_REGISTER_SERVICE_WORKER', [
             'root' => esc_url_raw(rest_url()),
-            'base64' => base64_encode($this->customizer->get_theme_mod('application-user') . ':' . $this->customizer->get_theme_mod('application-password'))
+            'base64' => base64_encode(self::USERNAME . ':' . $this->customizer->get_theme_mod('application-password'))
         ]);
     }
 

@@ -67,13 +67,6 @@ class Customizer
                 'description' => '255.255.255.255/32'
             ]
         ],
-        'application-user' => [
-            'control_option' => [
-                'section' => 'register',
-                'label' => 'Application User',
-                'description' => 'Appliation Passwords を使用するユーザー名'
-            ]
-        ],
         'application-password' => [
             'control_option' => [
                 'section' => 'register',
