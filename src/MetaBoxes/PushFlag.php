@@ -89,18 +89,18 @@ class PushFlag
                     $insert_option['ID'] = $already;
                 }
 
-                $datetime = isset($opts['datetime']) && $opts['datetime'] ? $opts['datetime']: $post->post_date;
-                if ($datetime) {
-                    $time = strtotime($datetime);
-                    $insert_option['post_date'] = date_i18n('Y-m-d H:i:s', $time);
-                    $insert_option['post_date_gmt'] = date('Y-m-d H:i:s', $time);
+                $datetime = isset($opts['datetime']) && $opts['datetime'] ? strtotime($opts['datetime']): 0;
+                if ($post->post_status === 'future') {
+                    $future_date = strtotime($post->post_date);
+                    $datetime = $datetime > $future_date ? $datetime: $future_date;
+                }
 
-                    // 未来ならステータスをfutureに
-                    if ($time > time()) {
-                        $insert_option['post_status'] = 'future';
-                        $opts['datetime'] = date_i18n('Y-m-d\TH:i', $time);
-                        $to_publish = false;
-                    }
+                if ($datetime) {
+                    $insert_option['post_date'] = date_i18n('Y-m-d H:i:s', $datetime);
+                    $insert_option['post_date_gmt'] = date('Y-m-d H:i:s', $datetime);
+                    $insert_option['post_status'] = 'future';
+                    $opts['datetime'] = date_i18n('Y-m-d\TH:i', $datetime);
+                    $to_publish = false;
                 }
 
                 $use_icon = isset($opts['icon']) && $opts['icon'] === 'on' ? true: false;
@@ -122,7 +122,7 @@ class PushFlag
 
                 // パブリッシュする
                 if ($to_publish) {
-                    wp_publish_post($notification_id);
+                    wp_publish_post($opts['already']);
                 }
 
                 // alreadyフラグをセーブ
