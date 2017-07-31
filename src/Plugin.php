@@ -4,6 +4,8 @@ namespace WpPwaRegister;
 
 class Plugin
 {
+    const USERNAME = 'wp-pwa-register';
+
     private $valid = null;
 
     private function prepare()
@@ -25,7 +27,7 @@ class Plugin
     {
         $this->prepare();
 
-        register_deactivation_hook($file, 'flush_rewrite_rules');
+        register_deactivation_hook($file, [$this, 'deactivate']);
         register_activation_hook($file, [$this, 'activate']);
         add_action('init', [$this, 'rewrite_rules']);
         add_filter('redirect_canonical', [$this, 'canonical'], 10, 2);
@@ -106,7 +108,42 @@ class Plugin
     public function activate()
     {
         $this->rewrite_rules();
+        $this->createUser();
+    }
+
+    public function deactivate()
+    {
+        $this->deleteUser();
         flush_rewrite_rules();
+    }
+
+    private function deleteUser()
+    {
+        $filename = ROOT . DS . 'userid';
+        file_exists($filename) {
+            $userId = file_get_contents($filename);
+            wp_delete_user($userId);
+            unlink($filename);
+            remove_role(self::USERNAME);
+        }
+    }
+
+    private function createUser()
+    {
+        $username = self::USERNAME;
+        add_role($username, __('PWA Users 管理'), [
+            'read' => true,
+            'manage_pwa_users' => true
+        ]);
+        $password = wp_generate_password(12, true, true);
+        $userId = wp_create_user($username, $password, 'pseudo@example.com');
+        wp_update_user([
+            'ID' => $userId,
+            'role' => $username
+        ]);
+        $fp = fopen(ROOT . DS . 'userid', 'w');
+        fwrite($fp, $userId);
+        fclose($fp);
     }
 
     public function rewrite_rules()

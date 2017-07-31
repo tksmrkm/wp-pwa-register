@@ -29,6 +29,15 @@ class Posts
             'supports' => [
                 'title',
                 'custom-fields'
+            ],
+            'capabilities' => [
+                'read_post' => 'read',
+                'read_private_posts' => 'manage_pwa_users',
+                'edit_post' => 'manage_pwa_users',
+                'edit_posts' => 'manage_pwa_users',
+                'edit_others_posts' => 'edit_others_posts',
+                'delete_post' => 'delete_others_posts',
+                'publish_posts' => 'manage_pwa_users',
             ]
         ]);
 
@@ -45,6 +54,15 @@ class Posts
             'supports' => [
                 'title',
                 'custom-fields'
+            ],
+            'capabilities' => [
+                'read_post' => 'read',
+                'edit_post' => 'edit_others_posts',
+                'delete_post' => 'delete_others_posts',
+                'edit_posts' => 'edit_others_posts',
+                'edit_others_posts' => 'edit_others_posts',
+                'publish_posts' => 'publish_posts',
+                'read_private_posts' => 'read_private_posts',
             ]
         ] );
     }
