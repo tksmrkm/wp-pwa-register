@@ -34,6 +34,61 @@ class Plugin
         add_filter('redirect_canonical', [$this, 'canonical'], 10, 2);
         add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
         add_action('wp_head', [$this, 'wpHead']);
+        add_action('admin_notices', [$this, 'notices']);
+    }
+
+/**
+ * 管理画面にお知らせを表示する。
+ */
+    public function notices()
+    {
+        $ip = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
+        $loggedin = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
+        if (!$this->valid() || $ip || $loggedin) {
+            echo '<div class="notice notice-info is-dismissible"><p>[WP PWA Register]</p><ul>';
+
+            if ($ip) {
+                echo '<li>IPアドレスで制限中(', $this->customizer->get_theme_mod('accepted-ip-address'), ')</li>';
+            }
+
+            if ($loggedin) {
+                echo '<li>ログインユーザーのみ適用中</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('application-password')) {
+                echo '<li>Application Passwordsがありません</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('sender-id')) {
+                echo '<li>SenderIDがありません。</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('api-key')) {
+                echo '<li>API KEYがありません。</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('project-id')) {
+                echo '<li>ProjectIDがありません。</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('server-key')) {
+                echo '<li>サーバーキーがありません。</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('icon-src')) {
+                echo '<li>ICONのSRCがありません。</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('icon-sizes')) {
+                echo '<li>ICONのサイズがありません。</li>';
+            }
+
+            if (!$this->customizer->get_theme_mod('icon-type')) {
+                echo '<li>ICONのTypeがありません。</li>';
+            }
+
+            echo '</ul></div>';
+        }
     }
 
 /**
