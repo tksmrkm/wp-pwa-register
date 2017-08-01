@@ -36,7 +36,7 @@ self.addEventListener('push', event => {
             };
 
             // send push
-            self.registration.showNotification(title, opts);
+            return self.registration.showNotification(title, opts);
         })
     );
 });
@@ -57,6 +57,8 @@ self.addEventListener('notificationclick', event => {
             if (clients.openWindow) {
                 return clients.openWindow(url);
             }
+
+            return;
         })
     );
 });
