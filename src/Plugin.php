@@ -42,6 +42,10 @@ class Plugin
  */
     public function notices()
     {
+        if (!current_user_can('edit_theme_options')) {
+            return false;
+        }
+
         $ip = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
         $loggedin = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
         if (!$this->valid() || $ip || $loggedin) {
