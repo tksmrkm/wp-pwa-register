@@ -24,3 +24,10 @@ require_once 'src/Users.php';
 require_once 'src/MetaBoxes/PushFlag.php';
 
 new Plugin(__FILE__);
+
+/**
+ * Filters
+ *
+ * wp-pwa-register-valid-status
+ * on src/Plugin.php Plugin::valid
+ */

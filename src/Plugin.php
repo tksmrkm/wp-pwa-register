@@ -57,7 +57,7 @@ class Plugin
         && $this->customizer->get_theme_mod('icon-src')
         && $this->customizer->get_theme_mod('icon-sizes')
         && $this->customizer->get_theme_mod('icon-type');
-        return $this->valid;
+        return apply_filters( 'wp-pwa-register-valid-status', $this->valid );
     }
 
     private function enableToRestrictOnIp()
