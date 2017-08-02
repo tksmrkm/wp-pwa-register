@@ -4,7 +4,7 @@ namespace WpPwaRegister;
 
 const ROOT = __DIR__;
 const DS = DIRECTORY_SEPARATOR;
-const VERSION = '1.0.1';
+const VERSION = '1.0.2';
 
 /*
 Plugin Name: WP PWA Register
