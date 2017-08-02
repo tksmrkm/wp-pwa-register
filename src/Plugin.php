@@ -47,7 +47,7 @@ class Plugin
         }
 
         $ip = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
-        $loggedin = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
+        $loggedin = $this->customizer->get_theme_mod('enable-on-logged-in', false);
         if (!$this->valid() || $ip || $loggedin) {
             echo '<div class="notice notice-info is-dismissible"><p>[WP PWA Register]</p><ul>';
 
