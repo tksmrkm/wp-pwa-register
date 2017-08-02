@@ -36,7 +36,8 @@ class Posts
                 'edit_posts' => 'manage_pwa_users',
                 'edit_others_posts' => 'edit_others_posts',
                 'delete_post' => 'delete_others_posts',
-                'publish_posts' => 'manage_pwa_users',
+                'delete_posts' => 'delete_others_posts',
+                'publish_posts' => 'publish_posts',
             ]
         ]);
 
