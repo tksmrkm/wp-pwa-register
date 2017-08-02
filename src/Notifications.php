@@ -29,20 +29,7 @@ class Notifications
             $pwa_users = new WP_Query([
                 'post_type' => 'pwa_users',
                 'post_status' => 'any',
-                'posts_per_page' => -1,
-                'meta_query' => [
-                    'relation' => 'OR',
-                    [
-                        'key' => '_did_not_reach',
-                        'value' => 'lorem',
-                        'compare' => 'NOT EXISTS'
-                    ],
-                    [
-                        'key' => '_did_not_reach',
-                        'value' => '5',
-                        'compare' => '<='
-                    ]
-                ]
+                'posts_per_page' => -1
             ]);
 
             $error = $this->sendMessage($pwa_users, $post_id) ?: 0;

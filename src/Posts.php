@@ -11,7 +11,6 @@ class Posts
         add_action('init', [$this, 'register']);
         add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
 
-        add_filter('manage_edit-pwa_users_columns', [$this, 'firebaseUsersManageColumns']);
         add_filter('manage_edit-pwa_notifications_columns', [$this, 'firebaseNotificationsManageColumns']);
     }
 
@@ -68,12 +67,6 @@ class Posts
         ] );
     }
 
-    public function firebaseUsersManageColumns($columns)
-    {
-        $columns['_did_not_reach'] = '非到達数';
-        return $columns;
-    }
-
     public function firebaseNotificationsManageColumns($columns)
     {
         $columns['_reach_number'] = '到達/エラー';
@@ -82,10 +75,6 @@ class Posts
 
     public function addCustomColumn($column, $post_id)
     {
-        if ($column === '_did_not_reach') {
-            echo get_post_meta($post_id, '_did_not_reach', true);
-        }
-
         if ($column === '_reach_number') {
             echo get_post_meta($post_id, '_reach_success', true), ' / ', get_post_meta($post_id, '_reach_error', true);
         }
