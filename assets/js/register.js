@@ -31,10 +31,11 @@ class Register
         this.messaging.useServiceWorker(registration);
 
         const permission = this.messaging.getNotificationPermission_();
-        console.log(permission);
 
         if (permission === 'default') {
             this.requestPermission();
+        } else if (permission === 'granted') {
+            this.messaging.onTokenRefresh(this.getToken.bind(this));
         }
     }
 
@@ -51,7 +52,7 @@ class Register
 
     getToken() {
         console.count('getToken')
-        this.messaging.getToken()
+        return this.messaging.getToken()
         .then(this.setToken.bind(this))
         .catch(this.error.bind(this));
     }
