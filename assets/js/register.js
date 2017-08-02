@@ -1,54 +1,91 @@
 class Register
 {
+/**
+ * Constructor
+ * this.messaging firebaseのmessaging()オブジェクト
+ * this.auth      firebaseのauth()オブジェクト
+ */
     constructor() {
+        console.count('constructor');
         this.messaging = firebase.messaging();
         this.auth = firebase.auth();
         window.addEventListener('load', this.onload.bind(this));
     }
 
+/**
+ * window onLoad にバインドされたイベント
+ * /pwa-service-worker.jsを登録
+ */
     onload() {
+        console.count('onload')
         navigator.serviceWorker.register('/pwa-service-worker.js')
         .then(this.register.bind(this));
     }
 
+/**
+ * service-worker登録後の処理
+ * @param  {[type]} registration
+ */
     register(registration) {
+        console.count('register');
         this.messaging.useServiceWorker(registration);
 
         const permission = this.messaging.getNotificationPermission_();
+        console.log(permission);
 
         if (permission === 'default') {
             this.requestPermission();
         }
     }
 
+/**
+ * 通知のパーミッションがデフォルトのとき
+ * @return {[type]} [description]
+ */
     requestPermission() {
+        console.count('requestPermission');
         this.messaging.requestPermission()
         .then(this.getToken.bind(this))
         .catch(this.error.bind(this));
     }
 
     getToken() {
-        const result = this.messaging.getToken()
+        console.count('getToken')
+        this.messaging.getToken()
         .then(this.setToken.bind(this))
         .catch(this.error.bind(this));
     }
 
     setToken(token) {
+        console.count('setToken');
+        console.log(token);
         this.token = token;
         this.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
         this.auth.signInAnonymously()
         .catch(this.error.bind(this));
     }
 
+/**
+ * this.auth.onAuthStateChangedのコールバック関数
+ * firebaseで認証されたらthis.findUserに移行
+ * @param  {[type]} user [description]
+ */
     onAuthStateChanged(user) {
+        console.count('onAuthStateChanged');
         if (user) {
+            console.log(user);
             this.uid = user.uid;
             this.findUser();
         }
     }
 
+/**
+ * firebase.authのUIDをキーとしてpwa_usersから検索
+ * 新規か既存か判定し、既存ユーザーであればsaveUserにpwa_usersの記事IDを渡す
+ * @return {[type]} [description]
+ */
     findUser() {
-
+        console.count('findUser');
         const root = ajaxurl.split('/wp-admin/')[0];
         const headers = new Headers({
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
@@ -69,7 +106,15 @@ class Register
         })
     }
 
+/**
+ * pwa_user_idがnullなら新規作成
+ * pwa_usersの記事IDが渡されていればアップデート
+ * @param  {[type]} pwa_user_id [description]
+ * @return {[type]}             [description]
+ */
     saveUser(pwa_user_id) {
+        console.count('saveUser');
+        console.log(pwa_user_id);
         const root = ajaxurl.split('/wp-admin/')[0];
         const headers = new Headers({
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
