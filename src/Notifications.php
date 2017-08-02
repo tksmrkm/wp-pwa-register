@@ -64,7 +64,7 @@ class Notifications
             $token = get_post_meta($user->ID, 'token', true);
             if ($token) {
                 $ids['endpoints'][] = $token;
-                $ids['ids'][] = $user->post_title;
+                $ids['ids'][] = $user->ID;
             }
         }
 
@@ -108,15 +108,12 @@ class Notifications
 
         foreach ($response->results as $key => $result) {
             if (isset($result->registration_id)) {
-                wp_update_post([
-                    'ID' => $ids['id'][$key],
-                    'post_title' => $result->registration_id
-                ]);
+                update_post_meta($ids['ids'][$key], 'token', $result->registration_id);
             }
 
             if (isset($result->error)) {
                 if (preg_match('/NotRegistered/', $result->error)) {
-                    wp_delete_post($ids['id'][$key]);
+                    wp_delete_post($ids['ids'][$key]);
                 }
             }
         }
