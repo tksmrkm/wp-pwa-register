@@ -17,9 +17,11 @@ class Register
  * /pwa-service-worker.jsを登録
  */
     onload() {
-        console.count('onload')
-        navigator.serviceWorker.register('/pwa-service-worker.js')
-        .then(this.register.bind(this));
+        console.count('onload');
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/pwa-service-worker.js')
+            .then(this.register.bind(this));
+        }
     }
 
 /**
