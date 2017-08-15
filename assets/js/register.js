@@ -33,6 +33,7 @@ class Register
         this.messaging.useServiceWorker(registration);
 
         const permission = this.messaging.getNotificationPermission_();
+        console.log(permission);
 
         if (permission === 'default') {
             this.requestPermission();
