@@ -6,7 +6,7 @@ class Register
  * this.auth      firebaseのauth()オブジェクト
  */
     constructor() {
-        console.count('constructor');
+        // console.count('constructor');
         this.messaging = firebase.messaging();
         this.auth = firebase.auth();
         window.addEventListener('load', this.onload.bind(this));
@@ -17,7 +17,7 @@ class Register
  * /pwa-service-worker.jsを登録
  */
     onload() {
-        console.count('onload');
+        // console.count('onload');
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker.register('/pwa-service-worker.js')
             .then(this.register.bind(this));
@@ -29,11 +29,11 @@ class Register
  * @param  {[type]} registration
  */
     register(registration) {
-        console.count('register');
+        // console.count('register');
         this.messaging.useServiceWorker(registration);
 
         const permission = this.messaging.getNotificationPermission_();
-        console.log(permission);
+        // console.log(permission);
 
         if (permission === 'default') {
             this.requestPermission();
@@ -47,22 +47,22 @@ class Register
  * @return {[type]} [description]
  */
     requestPermission() {
-        console.count('requestPermission');
+        // console.count('requestPermission');
         this.messaging.requestPermission()
         .then(this.getToken.bind(this))
         .catch(this.error.bind(this));
     }
 
     getToken() {
-        console.count('getToken')
+        // console.count('getToken')
         return this.messaging.getToken()
         .then(this.setToken.bind(this))
         .catch(this.error.bind(this));
     }
 
     setToken(token) {
-        console.count('setToken');
-        console.log(token);
+        // console.count('setToken');
+        // console.log(token);
         this.token = token;
         this.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
         this.auth.signInAnonymously()
@@ -75,9 +75,9 @@ class Register
  * @param  {[type]} user [description]
  */
     onAuthStateChanged(user) {
-        console.count('onAuthStateChanged');
+        // console.count('onAuthStateChanged');
         if (user) {
-            console.log(user);
+            // console.log(user);
             this.uid = user.uid;
             this.findUser();
         }
@@ -89,7 +89,7 @@ class Register
  * @return {[type]} [description]
  */
     findUser() {
-        console.count('findUser');
+        // console.count('findUser');
         const root = ajaxurl.split('/wp-admin/')[0];
         const headers = new Headers({
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
@@ -117,8 +117,8 @@ class Register
  * @return {[type]}             [description]
  */
     saveUser(pwa_user_id) {
-        console.count('saveUser');
-        console.log(pwa_user_id);
+        // console.count('saveUser');
+        // console.log(pwa_user_id);
         const root = ajaxurl.split('/wp-admin/')[0];
         const headers = new Headers({
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
