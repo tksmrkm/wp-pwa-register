@@ -21,6 +21,7 @@ require_once 'src/Firebase.php';
 require_once 'src/Posts.php';
 require_once 'src/Notifications.php';
 require_once 'src/Users.php';
+require_once 'src/Head.php';
 require_once 'src/MetaBoxes/PushFlag.php';
 
 new Plugin(__FILE__);
