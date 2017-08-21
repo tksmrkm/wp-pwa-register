@@ -26,7 +26,7 @@ class Logs
 
         $backtrace = debug_backtrace(false, 2);
         $fp = fopen($log_file_path, 'a');
-        $header = strtoupper($flag) . ' :: ' . $backtrace[1]['file'] . ' line(' . $backtrace[1]['line'] . ')' . PHP_EOL;
+        $header = strtoupper($flag) . ' :: ' . $backtrace[1]['file'] . '(' . $backtrace[1]['line'] . ') - ' . date_i18n('Y-m-d H:i:s') . PHP_EOL;
         fwrite($fp, $header);
         foreach ($args as $value) {
             fwrite($fp, var_export($value, true) . PHP_EOL . PHP_EOL);
