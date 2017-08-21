@@ -67,6 +67,15 @@ class Customizer
                 'description' => '255.255.255.255/32'
             ]
         ],
+        'debug' => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'label' => 'Debugモード',
+                'type' => 'checkbox'
+            ]
+        ],
         'application-password' => [
             'control_option' => [
                 'section' => 'register',

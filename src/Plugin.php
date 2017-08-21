@@ -13,6 +13,7 @@ class Plugin
         $container = [];
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
+        Api::getInstance($container);
         Manifest::getInstance($container);
         Register::getInstance();
         ServiceWorker::getInstance($container);
@@ -154,8 +155,10 @@ class Plugin
         }
 
         wp_localize_script('pwa-register', 'WP_REGISTER_SERVICE_WORKER', [
+            'webroot' => get_home_url(),
             'root' => esc_url_raw(rest_url()),
-            'base64' => base64_encode(self::USERNAME . ':' . $this->customizer->get_theme_mod('application-password'))
+            'base64' => base64_encode(self::USERNAME . ':' . $this->customizer->get_theme_mod('application-password')),
+            'debug' => $this->customizer->get_theme_mod('debug', false)
         ]);
     }
 

@@ -13,6 +13,7 @@ Description: WordpressにPWA(Progressive Web Apps)を適用させる。
 
 require_once 'src/traits/Singleton.php';
 require_once 'src/Plugin.php';
+require_once 'src/Api.php';
 require_once 'src/Logs.php';
 require_once 'src/Manifest.php';
 require_once 'src/Customizer.php';
