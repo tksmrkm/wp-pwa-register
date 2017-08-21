@@ -37,10 +37,11 @@ class Api
 
     private function log()
     {
-        $this->logs->debug([
-            'Server' => $_SERVER,
-            'Post' => $_POST,
-            'Get' => $_GET
-        ]);
+        $data = $_GET;
+
+        if (isset($_GET['method']) && $_GET['method'] === 'post') {
+            $data = $_POST;
+        }
+        $this->logs->debug($data);
     }
 }
