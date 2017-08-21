@@ -33,7 +33,7 @@ class Register
         this.messaging.useServiceWorker(registration);
 
         const permission = this.messaging.getNotificationPermission_();
-        // console.log(permission);
+        this.permission = permission;
 
         if (permission === 'default') {
             this.requestPermission();
@@ -90,12 +90,11 @@ class Register
  */
     findUser() {
         // console.count('findUser');
-        const root = ajaxurl.split('/wp-admin/')[0];
         const headers = new Headers({
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
         });
 
-        fetch(`${root}/wp-json/wp/v2/pwa_users?status=draft&search=${this.uid}`, {
+        fetch(`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users?status=draft&search=${this.uid}`, {
             headers: headers
         })
         .then(response => {
@@ -117,14 +116,24 @@ class Register
  * @return {[type]}             [description]
  */
     saveUser(pwa_user_id) {
+        if (WP_REGISTER_SERVICE_WORKER.debug && this.permission === 'granted') {
+            const fetchBody = new FormData();
+            fetchBody.append('permission', 'granted');
+            fetchBody.append('uid', this.uid);
+            fetchBody.append('pwa_user_id', pwa_user_id);
+            fetchBody.append('token', this.token);
+            fetch(`${WP_REGISTER_SERVICE_WORKER.webroot}/api/log?method=post`, {
+                method: 'POST',
+                body: fetchBody
+            });
+        }
         // console.count('saveUser');
         // console.log(pwa_user_id);
-        const root = ajaxurl.split('/wp-admin/')[0];
         const headers = new Headers({
             Authorization: 'Basic ' + WP_REGISTER_SERVICE_WORKER.base64
         });
         const data = new FormData();
-        let entrypoint = `${root}/wp-json/wp/v2/pwa_users`;
+        let entrypoint = `${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users`;
         if (pwa_user_id) {
             entrypoint += '/' + pwa_user_id;
         }
