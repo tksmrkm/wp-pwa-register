@@ -12,6 +12,7 @@ class Plugin
     {
         $container = [];
         $container['customizer'] = Customizer::getInstance();
+        $container['logs'] = Logs::getInstance();
         Manifest::getInstance($container);
         Register::getInstance();
         ServiceWorker::getInstance($container);
