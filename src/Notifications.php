@@ -55,7 +55,15 @@ class Notifications
             }
         }
 
-        return $this->curl($ids, $post_id);
+        $ids_chunks = array_chunk($ids, 1000);
+
+        $failure = 0;
+
+        foreach($ids_chunks as $chunk) {
+            $failure += $this->curl($chunk, $post_id);
+        }
+
+        return $failure;
     }
 
     private function curl($ids, $post_id)
