@@ -42,25 +42,26 @@ class Notifications
 
     private function sendMessage($users, $post_id)
     {
-        $ids = [
-            'endpoints' => [],
-            'ids' => []
-        ];
-
-        foreach ($users->posts as $user) {
-            $token = get_post_meta($user->ID, 'token', true);
-            if ($token) {
-                $ids['endpoints'][] = $token;
-                $ids['ids'][] = $user->ID;
-            }
-        }
-
-        $ids_chunks = array_chunk($ids, 1000);
-
         $failure = 0;
 
-        foreach($ids_chunks as $chunk) {
-            $failure += $this->curl($chunk, $post_id);
+        $users_chunks = array_chunk($users->posts, 1000);
+
+        foreach ($users_chunks as $chunk) {
+            $ids = [
+                'endpoints' => [],
+                'ids' => []
+            ];
+
+            foreach ($chunk as $user) {
+                $token = get_post_meta($user->ID, 'token', false);
+
+                if ($token) {
+                    $ids['endpoint'][] = $token;
+                    $ids['ids'][] = $user->ID;
+                }
+            }
+
+            $failure += $this->curl($ids, $post_id);
         }
 
         return $failure;
