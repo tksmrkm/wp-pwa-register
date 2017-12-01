@@ -15,6 +15,7 @@ class Notifications
     public function init($container)
     {
         $this->customizer = $container['customizer'];
+        $this->logs = $container['logs'];
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
         add_action('wp_insert_post', [$this, 'wpInsertPost']);
         add_action('rest_api_init', [$this, 'restApiInit']);
@@ -53,10 +54,10 @@ class Notifications
             ];
 
             foreach ($chunk as $user) {
-                $token = get_post_meta($user->ID, 'token', false);
+                $token = get_post_meta($user->ID, 'token', true);
 
                 if ($token) {
-                    $ids['endpoint'][] = $token;
+                    $ids['endpoints'][] = $token;
                     $ids['ids'][] = $user->ID;
                 }
             }
