@@ -1,3 +1,5 @@
+import Log from './components/Log';
+
 class Register
 {
 /**
@@ -7,6 +9,7 @@ class Register
  */
     constructor() {
         // console.count('constructor');
+        this.logger = new Log(`${WP_REGISTER_SERVICE_WORKER.webroot}/api/log?method=post`);
         this.messaging = firebase.messaging();
         this.auth = firebase.auth();
         window.addEventListener('load', this.onload.bind(this));
