@@ -12,6 +12,8 @@ class Register
         this.logger = new Log(`${WP_REGISTER_SERVICE_WORKER.webroot}/api/log?method=post`);
         this.messaging = firebase.messaging();
         this.auth = firebase.auth();
+        this.refresh = false;
+
         window.addEventListener('load', this.onload.bind(this));
     }
 
@@ -41,7 +43,7 @@ class Register
         if (permission === 'default') {
             this.requestPermission();
         } else if (permission === 'granted') {
-            this.messaging.onTokenRefresh(this.getToken.bind(this));
+            this.messaging.onTokenRefresh(this.refreshToken.bind(this));
         }
     }
 
@@ -54,6 +56,13 @@ class Register
         this.messaging.requestPermission()
         .then(this.getToken.bind(this))
         .catch(this.error.bind(this));
+    }
+
+    refreshToken() {
+        // console.count('RefreshToken');
+        this.refresh = true;
+        this.logger.logging({msg: 'will refresh token'});
+        return this.getToken();
     }
 
     getToken() {
@@ -125,10 +134,16 @@ class Register
             fetchBody.append('uid', this.uid);
             fetchBody.append('pwa_user_id', pwa_user_id);
             fetchBody.append('token', this.token);
-            fetch(`${WP_REGISTER_SERVICE_WORKER.webroot}/api/log?method=post`, {
-                method: 'POST',
-                body: fetchBody
-            });
+            this.logger.logging(fetchBody);
+        }
+
+        if (this.refresh) {
+            const ref = new FormData();
+            ref.append('msg', 'RefreshData');
+            ref.append('uid', this.uid);
+            ref.append('pwa_user_id', pwa_user_id);
+            ref.append('token', this.token);
+            this.logger.logging(ref);
         }
         // console.count('saveUser');
         // console.log(pwa_user_id);
