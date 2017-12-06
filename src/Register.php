@@ -4,8 +4,8 @@ namespace WpPwaRegister;
 
 class Register
 {
-    use Singleton;
-
+    use traits\Singleton;
+    
     public function init()
     {
         add_filter('query_vars', [$this, 'addVars']);

@@ -4,8 +4,8 @@ namespace WpPwaRegister;
 
 class Logs
 {
-    use Singleton;
-
+    use traits\Singleton;
+    
     public function init()
     {
         $this->log_dir = ROOT . DS . 'logs';

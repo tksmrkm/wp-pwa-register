@@ -4,7 +4,7 @@ namespace WpPwaRegister;
 
 class Customizer
 {
-    use Singleton;
+    use traits\Singleton;
 
     const PREFIX = 'wp-pwa-register-';
     const DEFAULT_PANEL = 'general';

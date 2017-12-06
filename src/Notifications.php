@@ -6,8 +6,8 @@ use WP_Query;
 
 class Notifications
 {
-    use Singleton;
-
+    use traits\Singleton;
+    
     const FCM_SERVER = 'https://fcm.googleapis.com/fcm/send';
 
     private $firebase_server_key;

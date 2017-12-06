@@ -4,8 +4,8 @@ namespace WpPwaRegister;
 
 class Head
 {
-    use Singleton;
-
+    use traits\Singleton;
+    
     public function init($c)
     {
         $this->customizer = $c['customizer'];

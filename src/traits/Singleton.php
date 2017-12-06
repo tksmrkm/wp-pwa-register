@@ -1,6 +1,6 @@
 <?php
 
-namespace WpPwaRegister;
+namespace WpPwaRegister\traits;
 
 trait Singleton
 {

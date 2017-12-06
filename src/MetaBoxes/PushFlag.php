@@ -2,7 +2,7 @@
 
 namespace WpPwaRegister\MetaBoxes;
 
-use WpPwaRegister\Singleton;
+use WpPwaRegister\traits\Singleton;
 use const WpPwaRegister\ROOT;
 use const WpPwaRegister\DS;
 

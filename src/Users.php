@@ -4,8 +4,8 @@ namespace WpPwaRegister;
 
 class Users
 {
-    use Singleton;
-
+    use traits\Singleton;
+    
     public function init()
     {
         add_action('rest_api_init', [$this, 'restApiInit']);

@@ -4,7 +4,7 @@ namespace WpPwaRegister;
 
 class Firebase
 {
-    use Singleton;
+    use traits\Singleton;
 
     public function init($container)
     {

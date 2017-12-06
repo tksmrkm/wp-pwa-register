@@ -4,7 +4,7 @@ namespace WpPwaRegister;
 
 class Api
 {
-    use Singleton;
+    use traits\Singleton;
 
     const ACCESS_POINT = 'api_log';
 

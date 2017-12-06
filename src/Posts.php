@@ -4,7 +4,7 @@ namespace WpPwaRegister;
 
 class Posts
 {
-    use Singleton;
+    use traits\Singleton;
 
     public function init()
     {

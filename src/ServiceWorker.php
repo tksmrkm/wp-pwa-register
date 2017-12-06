@@ -4,8 +4,8 @@ namespace WpPwaRegister;
 
 class ServiceWorker
 {
-    use Singleton;
-
+    use traits\Singleton;
+    
     private function init($container)
     {
         $this->customizer = $container['customizer'];
