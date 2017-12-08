@@ -1,6 +1,6 @@
-import fetchPush from './components/ServiceWorker/fetchPush';
-import notificationClick from './components/ServiceWorker/notificationClick';
+import push from './components/ServiceWorker/push';
+import notificationclick from './components/ServiceWorker/notificationclick';
 
-self.addEventListener('push', fetchPush);
+self.addEventListener('push', push);
 
-self.addEventListener('notificationclick', notificationClick);
+self.addEventListener('notificationclick', notificationclick);
