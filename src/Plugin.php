@@ -21,8 +21,10 @@ class Plugin
         Posts::getInstance();
         Notifications::getInstance($container);
         Users::getInstance();
-        MetaBoxes\PushFlag::getInstance();
+        // MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
+        new Options\Main();
+        new Options\Unsubscribe();
 
         $this->customizer = $container['customizer'];
     }

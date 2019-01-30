@@ -19,7 +19,7 @@ class Notifications
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
         add_action('wp_insert_post', [$this, 'wpInsertPost']);
         add_action('rest_api_init', [$this, 'restApiInit']);
-        add_action('publish_pwa_notifications', [$this, 'publish']);
+        // add_action('publish_pwa_notifications', [$this, 'publish']);
     }
 
     public function publish($post_id)
