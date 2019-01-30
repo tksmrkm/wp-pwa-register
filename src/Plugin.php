@@ -21,7 +21,7 @@ class Plugin
         Posts::getInstance();
         Notifications::getInstance($container);
         Users::getInstance();
-        MetaBoxes\PushFlag::getInstance();
+        // MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
 
         $this->customizer = $container['customizer'];

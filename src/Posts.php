@@ -16,6 +16,12 @@ class Posts
 
     public function register()
     {
+        $this->registerPwaUsers();
+        // $this->registerPwaNotifications();
+    }
+
+    private function registerPwaUsers()
+    {
         register_post_type('pwa_users', [
             'label' => 'pwa_users',
             'labels' => [
@@ -40,7 +46,10 @@ class Posts
                 'publish_posts' => 'publish_posts',
             ]
         ]);
+    }
 
+    private function registerPwaNotifications()
+    {
         register_post_type( 'pwa_notifications', [
             'label' => 'PUSH通知',
             'labels' => [
