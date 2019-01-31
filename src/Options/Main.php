@@ -2,8 +2,6 @@
 
 namespace WpPwaRegister\Options;
 
-use WP_Query;
-
 use const WpPwaRegister\ROOT;
 use const WpPwaRegister\DS;
 
@@ -23,46 +21,11 @@ class Main
 
     public function adminMenuView()
     {
-        $start = microtime(true);
-        $legacy = $this->legacyMessage();
-        $mid = microtime(true);
-        $modern = $this->newMessage();
-        $end = \microtime(true);
-
-        var_dump($mid - $start, $end - $mid);
-        var_dump($legacy, $modern);
+        $ids = $this->getRegistrtionIds();
+        include_once ROOT . DS . 'templates' . DS .'options' . DS . 'main.php';
     }
 
-    public function legacyMessage()
-    {
-        $pwa_users = new WP_Query([
-            'post_type' => 'pwa_users',
-            'post_status' => 'any',
-            'posts_per_page' => 1000,
-            'orderby' => "ID"
-        ]);
-
-        $chunks = array_chunk($pwa_users->posts, 1000);
-        return array_map(function($chunk) {
-            $ids = [
-                "endpoints" => [],
-                "ids" => []
-            ];
-
-            foreach ($chunk as $user) {
-                $token = get_post_meta($user->ID, 'token', true);
-
-                if ($token) {
-                    $ids["endpoints"][] = $token;
-                    $ids["ids"][] = $user->ID;
-                }
-            }
-
-            return $ids;
-        }, $chunks);
-    }
-
-    public function newMessage()
+    public function getRegistrtionIds()
     {
         global $wpdb;
 $query = <<<QUERY
@@ -82,7 +45,6 @@ WHERE
 ORDER BY
     Post.ID
     DESC
-LIMIT 1000
 ;
 QUERY
 ;
