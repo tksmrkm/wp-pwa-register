@@ -21,10 +21,12 @@ class Main
 
     public function adminMenuView()
     {
-        $ids = $this->getRegistrtionIds();
         include_once ROOT . DS . 'templates' . DS .'options' . DS . 'main.php';
     }
 
+    /**
+     * Deprecated
+     */
     public function getRegistrtionIds()
     {
         global $wpdb;
