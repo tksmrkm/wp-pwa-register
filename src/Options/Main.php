@@ -23,10 +23,51 @@ class Main
 
     public function adminMenuView()
     {
+        $start = microtime(true);
+        $legacy = $this->legacyMessage();
+        $mid = microtime(true);
+        $modern = $this->newMessage();
+        $end = \microtime(true);
+
+        var_dump($mid - $start, $end - $mid);
+        var_dump($legacy, $modern);
+    }
+
+    public function legacyMessage()
+    {
+        $pwa_users = new WP_Query([
+            'post_type' => 'pwa_users',
+            'post_status' => 'any',
+            'posts_per_page' => 1000,
+            'orderby' => "ID"
+        ]);
+
+        $chunks = array_chunk($pwa_users->posts, 1000);
+        return array_map(function($chunk) {
+            $ids = [
+                "endpoints" => [],
+                "ids" => []
+            ];
+
+            foreach ($chunk as $user) {
+                $token = get_post_meta($user->ID, 'token', true);
+
+                if ($token) {
+                    $ids["endpoints"][] = $token;
+                    $ids["ids"][] = $user->ID;
+                }
+            }
+
+            return $ids;
+        }, $chunks);
+    }
+
+    public function newMessage()
+    {
         global $wpdb;
 $query = <<<QUERY
 SELECT
-    Post.post_title as id,
+    Post.ID as id,
     Meta.meta_value as token
 FROM
     {$wpdb->postmeta} as `Meta`
@@ -38,12 +79,25 @@ WHERE
     Meta.meta_key = 'token'
     AND
     Post.post_type = 'pwa_users'
-LIMIT 1
+ORDER BY
+    Post.ID
+    DESC
+LIMIT 1000
 ;
 QUERY
 ;
-        $result = $wpdb->get_results($query);
-        $json = json_encode($result);
-        include_once ROOT . DS . 'templates' . DS . 'options' . DS . 'main.php';
+        $pwa_users = $wpdb->get_results($query);
+        $chunks = array_chunk($pwa_users, 1000);
+        return array_map(function($chunk) {
+            $retval = [
+                "endpoints" => [],
+                "ids" => []
+            ];
+            foreach ($chunk as $user) {
+                $retval["endpoints"][] = $user->token;
+                $retval["ids"][] = $user->id;
+            }
+            return $retval;
+        }, $chunks);
     }
 }
