@@ -1,6 +1,6 @@
 <div class="wrap">
     <h2>Choose WebPushTarget</h2>
-    <textarea id="filtered" style="width: 100%;"><?php echo json_encode($filtered); ?></textarea>
+    <textarea id="filtered" style="width: 100%;"><?php echo $json ?></textarea>
 </div>
 
 <script>

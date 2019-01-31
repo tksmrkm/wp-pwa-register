@@ -23,20 +23,27 @@ class Main
 
     public function adminMenuView()
     {
-        $pwa_users = new WP_Query([
-            'post_type' => 'pwa_users',
-            'post_status' => 'any',
-            'posts_per_page' => -1
-        ]);
-        $mapped = array_map(function($user) {
-            return [
-                'key' => $user->post_title,
-                'token' => get_post_meta($user->ID, 'token', true)
-            ];
-        }, $pwa_users->posts);
-        $filtered = array_filter($mapped, function($user) {
-            return $user['key'] && $user['token'];
-        });
+        global $wpdb;
+$query = <<<QUERY
+SELECT
+    Post.post_title as id,
+    Meta.meta_value as token
+FROM
+    {$wpdb->postmeta} as `Meta`
+INNER JOIN
+    {$wpdb->posts} as `Post`
+    ON
+    Meta.post_id = Post.id
+WHERE
+    Meta.meta_key = 'token'
+    AND
+    Post.post_type = 'pwa_users'
+LIMIT 1
+;
+QUERY
+;
+        $result = $wpdb->get_results($query);
+        $json = json_encode($result);
         include_once ROOT . DS . 'templates' . DS . 'options' . DS . 'main.php';
     }
 }
