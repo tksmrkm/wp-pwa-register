@@ -17,7 +17,7 @@ class Posts
     public function register()
     {
         $this->registerPwaUsers();
-        // $this->registerPwaNotifications();
+        $this->registerPwaNotifications();
     }
 
     private function registerPwaUsers()
