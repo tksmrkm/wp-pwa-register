@@ -19,7 +19,7 @@ class Notifications
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
         add_action('wp_insert_post', [$this, 'wpInsertPost']);
         add_action('rest_api_init', [$this, 'restApiInit']);
-        // add_action('publish_pwa_notifications', [$this, 'publish']);
+        add_action('publish_pwa_notifications', [$this, 'publish']);
     }
 
     public function publish($post_id)
@@ -27,13 +27,7 @@ class Notifications
         $had_ever = get_post_meta($post_id, '_published_ever', true);
 
         if (!$had_ever) {
-            $pwa_users = new WP_Query([
-                'post_type' => 'pwa_users',
-                'post_status' => 'any',
-                'posts_per_page' => -1
-            ]);
-
-            $error = $this->sendMessage($pwa_users, $post_id) ?: 0;
+            $error = $this->sendMessage($post_id);
 
             update_post_meta($post_id, '_published_ever', true);
             update_post_meta($post_id, '_reach_success', $pwa_users->post_count - $error);
@@ -41,7 +35,56 @@ class Notifications
         }
     }
 
-    private function sendMessage($users, $post_id)
+    private function sendMessage($post_id)
+    {
+        $error = 0;
+
+        foreach ($this->getUsers() as $users) {
+            $error += $this->curl($users, $post_id);
+        }
+
+        return $error;
+    }
+
+    /**
+     * Generator
+     * @return [
+     *   'endpoints' => Token[],
+     *   'ids' => pwa_users->id[]
+     * ]
+     */
+    private function getUsers()
+    {
+        global $wpdb;
+
+        $page = 0;
+        $limit = 1000;
+
+        while ($page >= 0) {
+            $offset = $page * $limit;
+            $query = "SELECT Post.ID as id, Meta.meta_value as token FROM {$wpdb->postmeta} as `Meta` INNER JOIN {$wpdb->posts} as `Post` ON Meta.post_id = Post.id WHERE Meta.meta_key = 'token' AND Post.post_type = 'pwa_users' ORDER BY Post.ID DESC LIMIT {$limit} OFFSET {$offset}";
+            $users = $wpdb->get_results($query);
+            if (count($users)) {
+                $retval = [
+                    'endpoints' => [],
+                    'ids' => []
+                ];
+                foreach ($users as $user) {
+                    $retval['endpoints'][] = $user->token;
+                    $retval['ids'][] = $user->id;
+                }
+                yield $retval;
+                $page++;
+            } else {
+                $page = -1;
+            }
+        }
+    }
+
+    /**
+     * deprecated
+     */
+    private function _sendMessage($users, $post_id)
     {
         $failure = 0;
 
