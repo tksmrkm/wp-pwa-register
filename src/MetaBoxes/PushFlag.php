@@ -73,61 +73,61 @@ class PushFlag
  */
     public function publishPost($post_id, $post)
     {
-        if ($post->post_status === 'future' || $post->post_date === $post->post_modified) {
-            $opts = get_post_meta($post_id, self::META_KEY, true);
-            $flag = isset($opts['flag']) && $opts['flag'] === 'on' ? true: false;
-            if ($flag) {
-                $to_publish = true;
-                $title = isset($opts['title']) && $opts['title'] ? $opts['title'] : $post->post_title;
-                $insert_option = [
-                    'post_title' => $title,
-                    'post_type' => 'pwa_notifications',
-                ];
+        $opts = get_post_meta($post_id, self::META_KEY, true);
+        $enabled = isset($opts['flag']) && $opts['flag'] === 'on' ? true: false;
+        $already = isset($opts['already']) ? true: false;
+        $flag = $enabled && !$already;
 
-                $already = isset($opts['already']) && $opts['already'] ? $opts['already']: false;
-                if ($already) {
-                    $insert_option['ID'] = $already;
-                }
+        if ($flag) {
+            $to_publish = true;
+            $title = isset($opts['title']) && $opts['title'] ? $opts['title'] : $post->post_title;
+            $insert_option = [
+                'post_title' => $title,
+                'post_type' => 'pwa_notifications',
+            ];
 
-                $datetime = isset($opts['datetime']) && $opts['datetime'] ? strtotime($opts['datetime']): 0;
-                if ($post->post_status === 'future') {
-                    $future_date = strtotime($post->post_date);
-                    $datetime = $datetime > $future_date ? $datetime: $future_date;
-                }
-
-                if ($datetime) {
-                    $insert_option['post_date'] = date_i18n('Y-m-d H:i:s', $datetime);
-                    $insert_option['post_date_gmt'] = date('Y-m-d H:i:s', $datetime);
-                    $insert_option['post_status'] = 'future';
-                    $opts['datetime'] = date_i18n('Y-m-d\TH:i', $datetime);
-                    $to_publish = false;
-                }
-
-                $use_icon = isset($opts['icon']) && $opts['icon'] === 'on' ? true: false;
-                $icon_src = '';
-                if ($use_icon) {
-                    $thumb_id = get_post_thumbnail_id($post_id);
-                    $thumb = wp_get_attachment_image_src($thumb_id, [152, 152]);
-                    if ($thumb) {
-                        $icon_src = $thumb[0];
-                    }
-                }
-                $headline = isset($opts['headline']) && $opts['headline'] ? $opts['headline']: '';
-
-                // pwa_notificationsに記事を準備
-                $opts['already'] = wp_insert_post($insert_option);
-                update_post_meta($opts['already'], 'icon', $icon_src);
-                update_post_meta($opts['already'], 'headline', $headline);
-                update_post_meta($opts['already'], 'link', $post->guid);
-
-                // パブリッシュする
-                if ($to_publish) {
-                    wp_publish_post($opts['already']);
-                }
-
-                // alreadyフラグをセーブ
-                update_post_meta( $post_id, self::META_KEY, $opts);
+            if ($already) {
+                $insert_option['ID'] = $opts['already'];
             }
+
+            $datetime = isset($opts['datetime']) && $opts['datetime'] ? strtotime($opts['datetime']): 0;
+            if ($post->post_status === 'future') {
+                $future_date = strtotime($post->post_date);
+                $datetime = $datetime > $future_date ? $datetime: $future_date;
+            }
+
+            if ($datetime) {
+                $insert_option['post_date'] = date_i18n('Y-m-d H:i:s', $datetime);
+                $insert_option['post_date_gmt'] = date('Y-m-d H:i:s', $datetime);
+                $insert_option['post_status'] = 'future';
+                $opts['datetime'] = date_i18n('Y-m-d\TH:i', $datetime);
+                $to_publish = false;
+            }
+
+            $use_icon = isset($opts['icon']) && $opts['icon'] === 'on' ? true: false;
+            $icon_src = '';
+            if ($use_icon) {
+                $thumb_id = get_post_thumbnail_id($post_id);
+                $thumb = wp_get_attachment_image_src($thumb_id, [152, 152]);
+                if ($thumb) {
+                    $icon_src = $thumb[0];
+                }
+            }
+            $headline = isset($opts['headline']) && $opts['headline'] ? $opts['headline']: '';
+
+            // pwa_notificationsに記事を準備
+            $opts['already'] = wp_insert_post($insert_option);
+            update_post_meta($opts['already'], 'icon', $icon_src);
+            update_post_meta($opts['already'], 'headline', $headline);
+            update_post_meta($opts['already'], 'link', $post->guid);
+
+            // パブリッシュする
+            if ($to_publish) {
+                wp_publish_post($opts['already']);
+            }
+
+            // alreadyフラグをセーブ
+            update_post_meta( $post_id, self::META_KEY, $opts);
         }
     }
 }

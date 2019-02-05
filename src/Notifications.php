@@ -30,7 +30,7 @@ class Notifications
             $error = $this->sendMessage($post_id);
 
             update_post_meta($post_id, '_published_ever', true);
-            update_post_meta($post_id, '_reach_success', $pwa_users->post_count - $error);
+            update_post_meta($post_id, '_reach_success', wp_count_posts('pwa_users')->draft - $error);
             update_post_meta($post_id, '_reach_error', $error);
         }
     }
@@ -62,7 +62,7 @@ class Notifications
 
         while ($page >= 0) {
             $offset = $page * $limit;
-            $query = "SELECT Post.ID as id, Meta.meta_value as token FROM {$wpdb->postmeta} as `Meta` INNER JOIN {$wpdb->posts} as `Post` ON Meta.post_id = Post.id WHERE Meta.meta_key = 'token' AND Post.post_type = 'pwa_users' ORDER BY Post.ID DESC LIMIT {$limit} OFFSET {$offset}";
+            $query = "SELECT Post.ID as id, Meta.meta_value as token FROM {$wpdb->postmeta} as `Meta` INNER JOIN {$wpdb->posts} as `Post` ON Meta.post_id = Post.ID WHERE Meta.meta_key = 'token' AND Post.post_type = 'pwa_users' AND Post.post_status = 'draft' ORDER BY Post.ID DESC LIMIT {$limit} OFFSET {$offset}";
             $users = $wpdb->get_results($query);
             if (count($users)) {
                 $retval = [
@@ -81,37 +81,7 @@ class Notifications
         }
     }
 
-    /**
-     * deprecated
-     */
-    private function _sendMessage($users, $post_id)
-    {
-        $failure = 0;
-
-        $users_chunks = array_chunk($users->posts, 1000);
-
-        foreach ($users_chunks as $chunk) {
-            $ids = [
-                'endpoints' => [],
-                'ids' => []
-            ];
-
-            foreach ($chunk as $user) {
-                $token = get_post_meta($user->ID, 'token', true);
-
-                if ($token) {
-                    $ids['endpoints'][] = $token;
-                    $ids['ids'][] = $user->ID;
-                }
-            }
-
-            $failure += $this->curl($ids, $post_id);
-        }
-
-        return $failure;
-    }
-
-    private function curl($ids, $post_id)
+    private function curl($ids, $post_id, $dry = false)
     {
         $headers = [
             'TTL: 60',
@@ -126,12 +96,17 @@ class Notifications
             ]
         ];
 
+        if ($dry) {
+            $data['dry_run'] = true;
+        }
+
         foreach ($ids['endpoints'] as $endpoint) {
             $data['registration_ids'][] = $endpoint;
         }
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        // curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
@@ -139,21 +114,23 @@ class Notifications
         $response = curl_exec($ch);
         curl_close($ch);
 
-        return $this->error_check($response, $ids);
+        return $this->error_check($response, $ids, $dry);
     }
 
-    private function error_check($response, $ids)
+    private function error_check($response, $ids, $dry)
     {
         $response = json_decode($response);
 
-        foreach ($response->results as $key => $result) {
-            if (isset($result->registration_id)) {
-                update_post_meta($ids['ids'][$key], 'token', $result->registration_id);
-            }
+        if (!$dry) {
+            foreach ($response->results as $key => $result) {
+                if (isset($result->registration_id)) {
+                    update_post_meta($ids['ids'][$key], 'token', $result->registration_id);
+                }
 
-            if (isset($result->error)) {
-                if (preg_match('/NotRegistered/', $result->error)) {
-                    wp_delete_post($ids['ids'][$key]);
+                if (isset($result->error)) {
+                    if (preg_match('/NotRegistered/', $result->error)) {
+                        wp_delete_post($ids['ids'][$key]);
+                    }
                 }
             }
         }
