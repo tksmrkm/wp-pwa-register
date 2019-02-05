@@ -1,10 +1,10 @@
 export default event => {
-    event.notification.close();
+    event.notification.close()
 
-    let url = '/';
+    let url = '/'
 
     if (event.notification.data.url) {
-        url = event.notification.data.url;
+        url = event.notification.data.url
     }
 
     event.waitUntil(
@@ -12,10 +12,10 @@ export default event => {
         .matchAll({type: 'window'})
         .then(function() {
             if (clients.openWindow) {
-                return clients.openWindow(url);
+                return clients.openWindow(url)
             }
 
-            return;
+            return
         })
-    );
+    )
 }
