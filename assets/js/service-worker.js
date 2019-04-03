@@ -1,6 +1,7 @@
 import push from './components/ServiceWorker/push';
-import notificationclick from './components/ServiceWorker/notificationclick';
+import { onClick, onClose } from './components/ServiceWorker/notification'
 
 self.addEventListener('push', push);
 
-self.addEventListener('notificationclick', notificationclick);
+self.addEventListener('notificationclick', onClick);
+self.addEventListener('notificationclose', onClose);
