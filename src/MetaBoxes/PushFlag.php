@@ -56,7 +56,7 @@ class PushFlag
  */
     public function addMetaBox()
     {
-        $post_id = $_GET['post'];
+        $post_id = isset($_GET['post']) ? $_GET['post']: null;
         $key = self::META_KEY;
         $opts = get_post_meta($post_id, $key, true) ?: [];
         $already = isset($opts['already']) && $opts['already'] ? $opts['already']: false;
