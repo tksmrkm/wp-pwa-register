@@ -58,6 +58,7 @@ class Posts
             ],
             'description' => 'PUSH通知の登録',
             'public' => false,
+            'rewrite' => false,
             'show_in_rest' => true,
             'show_ui' => true,
             'supports' => [
