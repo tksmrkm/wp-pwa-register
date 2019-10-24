@@ -1,6 +1,6 @@
 {
   "name": "wp-pwa-register",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "main": "index.js",
   "repository": "C:/xampp/htdocs/temp.apptimes.net/wordpress/wp-content/plugins/../../../../wordpress/wp-content/plugins/wp-pwa-register",
   "author": "tksmrkm <nis.murakami@gmail.com>",
