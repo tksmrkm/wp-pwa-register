@@ -153,7 +153,7 @@ class Notifications
                 }
                 return $meta;
             },
-            'update_callback' => function( $value, $post, $field_name) {
+            'update_callback' => function($value, $post, $field_name) {
                 if (!$value) {
                     return;
                 }
