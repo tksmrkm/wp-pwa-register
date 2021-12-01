@@ -212,8 +212,8 @@ class Plugin
 
     public function rewrite_rules()
     {
-        add_rewrite_rule('^pwa-register.js/?$', 'index.php?register=1', 'top');
-        add_rewrite_rule('^pwa-service-worker.js/?$', 'index.php?service-worker=1', 'top');
+        add_rewrite_rule('^pwa-register.js$', 'index.php?register=1', 'top');
+        add_rewrite_rule('^pwa-service-worker.js$', 'index.php?service-worker=1', 'top');
         add_rewrite_rule('^pwa-manifest.json/?$', 'index.php?manifest=1', 'top');
     }
 

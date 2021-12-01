@@ -152,6 +152,21 @@ class Notifications
                     $meta[$key] = get_post_meta($object['id'], $key, true);
                 }
                 return $meta;
+            },
+            'update_callback' => function( $value, $post, $field_name) {
+                if (!$value) {
+                    return;
+                }
+
+                foreach ($value as $key => $data) {
+                    if (is_array($data)) {
+                        foreach ($data as $record) {
+                            add_post_meta($post->ID, $key, $record);
+                        }
+                    } else {
+                        add_post_meta($post->ID, $key, $data);
+                    }
+                }
             }
         ]);
     }
