@@ -67,6 +67,15 @@ class Customizer
                 'description' => '255.255.255.255/32'
             ]
         ],
+        'notifications-s-maxage' => [
+            'option' => [
+                'default' => "600"
+            ],
+            'control_option' => [
+                'label' => 'pwa_notifications Cache-Control',
+                'description' => '/wp-json/wp/v2/pwa_notificationsのCache-Control時間（sec）'
+            ]
+        ],
         'debug' => [
             'option' => [
                 'default' => false

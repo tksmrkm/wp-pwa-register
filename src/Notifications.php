@@ -20,6 +20,17 @@ class Notifications
         add_action('wp_insert_post', [$this, 'wpInsertPost']);
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('publish_pwa_notifications', [$this, 'publish']);
+
+        $pattern = "/^\/wp-json\/wp\/v2\/pwa_notifications\/.+$/";
+        if (preg_match($pattern, $_SERVER['REQUEST_URI'])) {
+            $this->sendHeaders();
+        }
+    }
+
+    public function sendHeaders()
+    {
+        $maxage = $this->customizer->get_theme_mod('notifications-s-maxage');
+        header('Cache-Control: s-maxage=' . $maxage);
     }
 
     public function publish($post_id)
