@@ -35,6 +35,11 @@ class PushFlag
  */
     public function transitionPostStatus($new, $old, $post)
     {
+        $saved_data = get_post_meta($post->ID, self::META_KEY, true);
+        if ($saved_data) {
+            return;
+        }
+
         $save_data = isset($_POST[self::META_KEY]) ? $_POST[self::META_KEY]: false;
         if ($save_data) {
             update_post_meta($post->ID, self::META_KEY, $save_data);
