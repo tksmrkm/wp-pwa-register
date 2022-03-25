@@ -91,7 +91,7 @@ QUERY
 ;
 
         $pwa_users = $wpdb->get_results($query);
-        $chunks = array_chunk($pwa_users, 1000);
+        $chunks = array_chunk($pwa_users, 500);
         $mapped = array_map(function($chunk) {
             $retval = [
                 "endpoints" => [],
