@@ -19,8 +19,12 @@ class Users
             'methods' => ['GET'],
             'callback' => [$this, 'pwaNotificationIds'],
             'args' => [
-                'page' => 1,
-                'limit' => 100
+                'page' => [
+                    'default' => 1
+                ],
+                'limit' => [
+                    'default' => 100
+                ]
             ]
         ]);
 
