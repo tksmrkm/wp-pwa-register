@@ -160,6 +160,13 @@ class Plugin
             'base64' => base64_encode(self::USERNAME . ':' . $this->customizer->get_theme_mod('application-password')),
             'debug' => $this->customizer->get_theme_mod('debug', false)
         ]);
+
+        wp_localize_script('pwa-firebase', 'WP_PWA_REGISTER_FIREBASE_CONFIG', [
+            'appId' => $this->customizer->get_theme_mod('app-id'),
+            'apiKey' => $this->customizer->get_theme_mod('api-key'),
+            'projectId' => $this->customizer->get_theme_mod('project-id'),
+            'senderId' => $this->customizer->get_theme_mod('sender-id'),
+        ]);
     }
 
     public function wpHead()

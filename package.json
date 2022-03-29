@@ -14,5 +14,8 @@
   "scripts": {
     "js:build": "webpack -p --mode production",
     "js:watch": "webpack -dw --mode development"
+  },
+  "dependencies": {
+    "firebase": "^9.6.10"
   }
 }
