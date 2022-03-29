@@ -4,8 +4,8 @@ const config = {
     mode: 'development',
     context: path.resolve(__dirname, './assets/js'),
     entry: {
-        'service-worker': './service-worker.js',
-        register: './register.js'
+        'service-worker': './service-worker.ts',
+        register: './register.ts'
     },
     output: {
         path: path.resolve(__dirname, './templates'),
@@ -14,14 +14,14 @@ const config = {
     module: {
         rules: [
             {
-                test: /\.jsx?$/,
+                text: /\.tsx?$/,
                 exclude: /node_modules/,
-                loader: 'babel-loader'
+                loader: 'ts-loader'
             }
         ]
     },
     resolve: {
-        extensions: ['.js', '.jsx']
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
     }
 }
 

@@ -1,4 +1,6 @@
-const common = event => clients => {
+declare const clients: Clients
+
+const common = (event: NotificationEvent) => (clients: Clients) => {
     let url = '/'
 
     if (event.notification.data.url) {
@@ -14,11 +16,11 @@ const common = event => clients => {
     )
 }
 
-export const onClick = event => {
+export const onClick = (event: NotificationEvent) => {
     event.notification.close()
     common(event)(clients)
 }
 
-export const onClose = event => {
+export const onClose = (event: NotificationEvent) => {
     common(event)(clients)
 }
