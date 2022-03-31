@@ -150,8 +150,8 @@ class Plugin
     public function enqueueScripts()
     {
         if ($this->valid()) {
-            wp_enqueue_script('pwa-firebase', 'https://www.gstatic.com/firebasejs/4.1.3/firebase.js', [], null, true);
-            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), ['pwa-firebase'], VERSION, true);
+            // wp_enqueue_script('pwa-firebase', 'https://www.gstatic.com/firebasejs/4.1.3/firebase.js', [], null, true);
+            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), [], VERSION, true);
         }
 
         wp_localize_script('pwa-register', 'WP_REGISTER_SERVICE_WORKER', [
@@ -161,7 +161,7 @@ class Plugin
             'debug' => $this->customizer->get_theme_mod('debug', false)
         ]);
 
-        wp_localize_script('pwa-firebase', 'WP_PWA_REGISTER_FIREBASE_CONFIG', [
+        wp_localize_script('pwa-register', 'WP_PWA_REGISTER_FIREBASE_CONFIG', [
             'appId' => $this->customizer->get_theme_mod('app-id'),
             'apiKey' => $this->customizer->get_theme_mod('api-key'),
             'projectId' => $this->customizer->get_theme_mod('project-id'),

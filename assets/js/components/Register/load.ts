@@ -1,4 +1,4 @@
-import { handleRegisterError, handleRegisterSuccess } from "./register"
+import { handleRegisterSuccess } from "./register"
 
 interface ExtendedWorkerNavigator extends WorkerNavigator{
     serviceWorker?: ServiceWorkerContainer
@@ -12,7 +12,7 @@ const handleLoad = () => {
             .serviceWorker
             .register('/pwa-service-worker.js')
             .then(handleRegisterSuccess)
-            .catch(handleRegisterError)
+            .catch(console.warn)
     }
 }
 

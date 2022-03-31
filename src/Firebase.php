@@ -9,6 +9,7 @@ class Firebase
     public function init($container)
     {
         $this->customizer = $container['customizer'];
+        $this->valid = $valid;
 
         add_filter('script_loader_tag', [$this, 'scriptLoader'], 10, 3);
     }

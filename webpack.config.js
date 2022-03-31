@@ -14,14 +14,17 @@ const config = {
     module: {
         rules: [
             {
-                text: /\.tsx?$/,
+                test: /\.tsx?$/,
                 exclude: /node_modules/,
                 loader: 'ts-loader'
             }
         ]
     },
     resolve: {
-        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json']
+        extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
+        alias: {
+            '~': path.resolve(__dirname, 'assets/js')
+        }
     }
 }
 
