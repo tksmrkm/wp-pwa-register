@@ -1,6 +1,11 @@
-import { getToken, getMessaging, } from 'firebase/messaging'
+import { getToken, getMessaging } from 'firebase/messaging'
 import { signInAnonymously, getAuth } from 'firebase/auth'
 import app from '~/utils/firebase'
+
+type UserProps = {
+    id: string;
+
+}
 
 export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWorkerRegistration) => {
     const messaging = getMessaging(app)
@@ -21,16 +26,17 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
         throw new Error('can not find user')
     }
 
-    if (WP_REGISTER_SERVICE_WORKER.debug) {
-        throw new Error('test')
-    }
-
     // find user
     const headers = new Headers({
-        Authorization: `Basic ${WP_REGISTER_SERVICE_WORKER.base64}`
+        "Authorization": `Basic ${WP_REGISTER_SERVICE_WORKER.base64}`
     })
 
-    fetch(`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users?search=${user.user.uid}&status=draft`, {
+    const query = new URLSearchParams({
+        search: user.user.uid,
+        status: 'draft'
+    })
+
+    const fetchedUser = await fetch(`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users?${query}`, {
         headers
     })
     .then(response => {
@@ -40,33 +46,43 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
 
         throw `${response.status}: ${response.statusText}`
     })
-    .then((json: {id: string}[]) => {
-        const id = json.length ? json.pop()?.id: null
-        return id
-    })
-    .then(id => {
-        // save user
-        const headers = new Headers({
-            Authorization: `Basic ${WP_REGISTER_SERVICE_WORKER.base64}`,
-            "Content-Type": "application/json"
-        })
-
-        const body = JSON.stringify({
-            title: id,
-            token
-        })
-
-        const entry = [`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users`]
-
-        if (id) {
-            entry.push(id)
-        }
-
-        return fetch(entry.join('/'), {
-            headers,
-            body,
-            credentials: 'omit'
-        })
+    .then((json: UserProps[]) => {
+        const user = json.length ? json.pop(): null
+        console.log(user)
+        return user
     })
     .catch(console.warn)
+
+    // save user
+    const saveHeaders = new Headers({
+        Authorization: `Basic ${WP_REGISTER_SERVICE_WORKER.base64}`,
+        "Content-Type": "application/json"
+    })
+
+    const body = JSON.stringify({
+        title: user.user.uid,
+        token
+    })
+
+    const entry = [`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users`]
+
+    if (fetchedUser) {
+        entry.push(fetchedUser.id)
+    }
+
+    return fetch(entry.join('/'), {
+        method: 'post',
+        headers: saveHeaders,
+        body,
+        credentials: 'omit'
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json()
+        }
+    })
+    .then(json => {
+        console.log(json)
+        return json
+    })
 }
