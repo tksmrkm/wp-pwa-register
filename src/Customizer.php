@@ -92,6 +92,12 @@ class Customizer
                 'description' => 'Application Passwordsで発行されたパスワード'
             ]
         ],
+        'app-id' => [
+            'control_option' => [
+                'section' => 'firebase',
+                'label' => 'App ID'
+            ]
+        ],
         'sender-id' => [
             'control_option' => [
                 'section' => 'firebase',

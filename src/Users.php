@@ -18,6 +18,7 @@ class Users
         register_rest_route( 'wp_pwa_register/v1', 'notification_ids', [
             'methods' => ['GET'],
             'callback' => [$this, 'pwaNotificationIds'],
+            'permission_callback' => '__return_true',
             'args' => [
                 'page' => [
                     'default' => 1

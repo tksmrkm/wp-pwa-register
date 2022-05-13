@@ -1,8 +1,10 @@
-export default event => {
+declare const self: ServiceWorkerGlobalScope
+
+const pushHandler = (event: PushEvent) => {
     const endpoint = ['/wp-json/wp/v2/pwa_notifications']
 
     try {
-        const data = event.data.json()
+        const data = event.data?.json()
 
         if (data.data && data.data.post_id) {
             endpoint.push(data.data.post_id)
@@ -39,3 +41,5 @@ export default event => {
         .catch(console.warn)
     )
 }
+
+export default pushHandler

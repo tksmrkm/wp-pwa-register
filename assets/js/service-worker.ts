@@ -2,6 +2,8 @@ import push from './components/ServiceWorker/push';
 import { onClick, onClose } from './components/ServiceWorker/notification'
 import { handleFetch, handleInstall } from './components/ServiceWorker/install'
 
+declare const self: ServiceWorkerGlobalScope
+
 self.addEventListener('push', push);
 
 self.addEventListener('notificationclick', onClick);
