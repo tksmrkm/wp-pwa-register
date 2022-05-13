@@ -32,6 +32,9 @@ class Users
         register_rest_field('pwa_users', 'token', [
             'update_callback' => function($value, $object, $field_name) {
                 update_post_meta($object->ID, 'token', $value);
+            },
+            'get_callback' => function($object, $field_name) {
+                return get_post_meta($object['id'], $field_name, true);
             }
         ]);
     }

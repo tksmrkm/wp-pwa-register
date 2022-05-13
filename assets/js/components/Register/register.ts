@@ -4,6 +4,7 @@ import app from '~/utils/firebase'
 
 type UserProps = {
     id: string;
+    token: string;
 }
 
 export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWorkerRegistration) => {
@@ -66,10 +67,15 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
     const entry = [`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users`]
 
     if (fetchedUser) {
+        if (fetchedUser.token === token) {
+            // tokenの更新がないのでアップデート処理はキャンセル
+            return
+        }
+
         entry.push(fetchedUser.id)
     }
 
-    return fetch(entry.join('/'), {
+    fetch(entry.join('/'), {
         method: 'post',
         headers: saveHeaders,
         body,
