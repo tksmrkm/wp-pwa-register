@@ -1,4 +1,4 @@
-import { version } from '../../../../package.json'
+import pkg from '../../../../package.json'
 
 declare const caches: CacheStorage
 
@@ -6,7 +6,7 @@ const _offline = '/wp-content/plugins/wp-pwa-register/offline.html'
 
 export const handleInstall = (event: ExtendableEvent) => {
     event.waitUntil(
-        caches.open(version)
+        caches.open(pkg.version)
             .then(cache => {
                 cache.add(_offline)
             })

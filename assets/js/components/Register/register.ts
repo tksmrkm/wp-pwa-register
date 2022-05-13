@@ -4,7 +4,6 @@ import app from '~/utils/firebase'
 
 type UserProps = {
     id: string;
-
 }
 
 export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWorkerRegistration) => {
@@ -37,7 +36,8 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
     })
 
     const fetchedUser = await fetch(`${WP_REGISTER_SERVICE_WORKER.root}wp/v2/pwa_users?${query}`, {
-        headers
+        headers,
+        credentials: 'omit'
     })
     .then(response => {
         if (response.ok) {
