@@ -48,7 +48,6 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
     })
     .then((json: UserProps[]) => {
         const user = json.length ? json.pop(): null
-        console.log(user)
         return user
     })
     .catch(console.warn)
@@ -82,7 +81,6 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
         }
     })
     .then(json => {
-        console.log(json)
         return json
     })
 }
