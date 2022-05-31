@@ -35,22 +35,40 @@ class Notifications
 
     public function publish($post_id)
     {
+        $start = microtime(true);
+
+        $this->logs->debug([
+            'publish_start',
+            microtime(true) - $start
+        ]);
+
         $had_ever = get_post_meta($post_id, '_published_ever', true);
 
         if (!$had_ever) {
             $error = $this->sendMessage($post_id);
+            $this->logs->debug([
+                'after sendMessage()',
+                microtime(true) - $start
+            ]);
 
             update_post_meta($post_id, '_published_ever', true);
             update_post_meta($post_id, '_reach_success', wp_count_posts('pwa_users')->draft - $error);
             update_post_meta($post_id, '_reach_error', $error);
         }
+
+        $this->logs->debug([
+            'publish_finish',
+            microtime(true) - $start
+        ]);
     }
 
     private function sendMessage($post_id)
     {
         $error = 0;
+        $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
 
         foreach ($this->getUsers() as $users) {
+            set_time_limit($max_execution_time);
             $error += $this->curl($users, $post_id);
         }
 
