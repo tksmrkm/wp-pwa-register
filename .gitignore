@@ -3,3 +3,6 @@ userid
 /logs/
 .devcontainer.json
 .firebaserc
+*-debug.log
+.env
+service-account.json
