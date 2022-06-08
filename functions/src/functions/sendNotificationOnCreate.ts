@@ -1,5 +1,4 @@
-import { EventContext } from 'firebase-functions'
-import { firestore } from 'firebase-functions'
+import { EventContext, firestore } from 'firebase-functions'
 
 type handler = (snapshot: firestore.QueryDocumentSnapshot, context: EventContext) => unknown
 

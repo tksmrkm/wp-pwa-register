@@ -1,5 +1,6 @@
 import { https, Response } from 'firebase-functions'
-import firebase from '../firebase'
+import { admin } from '../firebase'
+import { getFirestore } from 'firebase-admin/firestore'
 
 type handler = (req: https.Request, res: Response<any>) => void | Promise<void>
 
@@ -8,7 +9,7 @@ const notificationsOnRequest: handler = async (req, res) => {
         throw new Error(`Method not allowed: ${req.method}`)
     }
 
-    firebase.firestore().collection('notifications').add({
+    getFirestore(admin).collection('notifications').add({
         ...req.params
     })
 }

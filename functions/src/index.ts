@@ -11,8 +11,8 @@ import sendNotificationOnCreate from "./functions/sendNotificationOnCreate";
 //   response.send("Hello from Firebase!");
 // });
 
-// export const sendNotification = functions.firestore.document('notifications/{id}').onCreate(sendNotificationOnCreate)
+export const sendNotification = functions.firestore.document('notifications/{id}').onCreate(sendNotificationOnCreate)
 
-// export const notifications = functions.https.onRequest(notificationsOnRequest)
+export const notifications = functions.https.onRequest(notificationsOnRequest)
 
-// export const users = functions.https.onRequest(registerUser)
+export const users = functions.https.onRequest(registerUser)
