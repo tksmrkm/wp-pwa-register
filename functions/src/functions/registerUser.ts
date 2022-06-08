@@ -15,9 +15,16 @@ const registerUser: handler = async (req, res) => {
     const firestore = getFirestore(admin)
     const messaging = getMessaging(admin)
 
-    firestore.collection('users').doc(params.title).set({
-        token: params.token,
-        created: new Date()
+    firestore.collection('users').doc(params.title).get().then(snapshot => {
+        const dat = {
+            token: params.token,
+            created: new Date(),
+            modified: new Date()
+        }
+        if (snapshot.exists) {
+            dat.created = snapshot.data()?.created
+        }
+        snapshot.ref.set(dat)
     })
 
     const subscribed = await messaging.subscribeToTopic(params.token, 'all')
