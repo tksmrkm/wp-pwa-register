@@ -89,6 +89,8 @@ class Notifications
         $page = 0;
         $limit = 1000;
 
+        $sent_list = [];
+
         while ($page >= 0) {
             $offset = $page * $limit;
             $query = "SELECT Post.ID as id, Meta.meta_value as token FROM {$wpdb->postmeta} as `Meta` INNER JOIN {$wpdb->posts} as `Post` ON Meta.post_id = Post.ID WHERE Meta.meta_key = 'token' AND Post.post_type = 'pwa_users' AND Post.post_status = 'draft' ORDER BY Post.ID DESC LIMIT {$limit} OFFSET {$offset}";
@@ -99,8 +101,11 @@ class Notifications
                     'ids' => []
                 ];
                 foreach ($users as $user) {
-                    $retval['endpoints'][] = $user->token;
-                    $retval['ids'][] = $user->id;
+                    if (!in_array($user->id, $sent_list)) {
+                        $retval['endpoints'][] = $user->token;
+                        $retval['ids'][] = $user->id;
+                        $sent_list[] = $user->id;
+                    }
                 }
                 yield $retval;
                 $page++;
