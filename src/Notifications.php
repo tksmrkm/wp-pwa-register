@@ -90,6 +90,7 @@ class Notifications
         $limit = 1000;
 
         $sent_list = [];
+        $duplicated_list = [];
 
         while ($page >= 0) {
             $offset = $page * $limit;
@@ -101,11 +102,14 @@ class Notifications
                     'ids' => []
                 ];
                 foreach ($users as $user) {
-                    if (!in_array($user->id, $sent_list)) {
-                        $retval['endpoints'][] = $user->token;
-                        $retval['ids'][] = $user->id;
-                        $sent_list[] = $user->id;
+                    if (in_array($user->id, $sent_list)) {
+                        $duplicated_list[] = $user->id;
+                        continue;
                     }
+
+                    $retval['endpoints'][] = $user->token;
+                    $retval['ids'][] = $user->id;
+                    $sent_list[] = $user->id;
                 }
                 yield $retval;
                 $page++;
@@ -113,6 +117,12 @@ class Notifications
                 $page = -1;
             }
         }
+
+        $this->logs->debug([
+            'duplicated' => count($duplicated_list),
+            'sent' => count($sent_list),
+            'duplicated_data' => $duplicated_list
+        ]);
     }
 
     private function curl($ids, $post_id, $dry = false)
