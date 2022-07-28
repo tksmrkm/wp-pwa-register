@@ -165,6 +165,12 @@ class Notifications
     {
         $response = json_decode($response);
 
+        $this->logs->debug([
+            'msg' => 'error_check()',
+            'success' => $response->success,
+            'failure' => $response->failure
+        ]);
+
         if (!$dry) {
             foreach ($response->results as $key => $result) {
                 if (isset($result->registration_id)) {
@@ -172,6 +178,12 @@ class Notifications
                 }
 
                 if (isset($result->error)) {
+                    $this->logs->debug([
+                        'msg' => 'has error',
+                        'result' => $result,
+                        'id' => $ids['ids'][$key]
+                    ]);
+
                     if (preg_match('/NotRegistered/', $result->error)) {
                         wp_delete_post($ids['ids'][$key]);
                     }
