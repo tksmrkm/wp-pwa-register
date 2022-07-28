@@ -102,14 +102,14 @@ class Notifications
                     'ids' => []
                 ];
                 foreach ($users as $user) {
-                    if (in_array($user->id, $sent_list)) {
-                        $duplicated_list[] = $user->id;
+                    if (in_array($user->token, $sent_list)) {
+                        $duplicated_list[] = $user->token;
                         continue;
                     }
 
                     $retval['endpoints'][] = $user->token;
                     $retval['ids'][] = $user->id;
-                    $sent_list[] = $user->id;
+                    $sent_list[] = $user->token;
                 }
                 yield $retval;
                 $page++;
