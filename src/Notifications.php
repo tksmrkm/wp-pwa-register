@@ -11,6 +11,8 @@ class Notifications
     const FCM_SERVER = 'https://fcm.googleapis.com/fcm/send';
 
     private $firebase_server_key;
+    private $customizer;
+    private $logs;
 
     public function init($container)
     {

@@ -7,6 +7,7 @@ class Plugin
     const USERNAME = 'wp-pwa-register';
 
     private $valid = null;
+    private $customizer;
 
     private function prepare()
     {

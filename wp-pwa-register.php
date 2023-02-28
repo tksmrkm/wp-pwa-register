@@ -13,7 +13,7 @@ Plugin Name: WP PWA Register
 Description: WordpressにPWA(Progressive Web Apps)を適用させる。
 */
 
-require_once 'autoload.php';
+require_once ROOT . DS . 'vendor' . DS . 'autoload.php';
 
 new Plugin(PLUGIN_FILE);
 

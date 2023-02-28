@@ -2,41 +2,41 @@
 
 namespace WpPwaRegister;
 
+use Monolog\Logger;
+use Monolog\Handler\RotatingFileHandler;
+use Monolog\Formatter\LineFormatter;
+
 class Logs
 {
     use traits\Singleton;
-    
+    private $log_dir;
+    private Logger $monolog;
+
     public function init()
     {
+        $monolog = new Logger('Log');
+        $handler = new RotatingFileHandler(ROOT . DS . 'logs' . DS . 'debug.log');
+        $log_format = "%datetime% > %context.file%::%context.line% %extra%\n%level_name% > %message%\n\n";
+        $formatter = new LineFormatter($log_format, 'Y-m-d H:i:s', true, true);
+        $handler->setFormatter($formatter);
+        $monolog->pushHandler($handler);
+        $this->monolog = $monolog;
         $this->log_dir = ROOT . DS . 'logs';
     }
 
     public function debug()
     {
-        $this->logging('debug', func_get_args());
-    }
+        $arg_number = func_num_args();
 
-    private function logging($flag = 'debug', $args)
-    {
-        if (!file_exists($this->log_dir)) {
-            mkdir($this->log_dir);
+        if ($arg_number > 0) {
+            $backtrace = debug_backtrace();
+            $file = str_replace(ROOT . DS, '', $backtrace[0]['file']);
+            $line = $backtrace[0]['line'];
+            $value = $arg_number > 1 ? var_export(func_get_args(), true): func_get_arg(0);
+            $this->monolog->debug($value, [
+                'file' => $file,
+                'line' => $line
+            ]);
         }
-
-        $log_file_path = $this->log_dir . DS . strtolower($flag) . '.log';
-
-        $backtrace = debug_backtrace(false, 2);
-        $fp = fopen($log_file_path, 'a');
-        $upper_flag = strtoupper($flag);
-        $escaped_root = str_replace('\\', '\\\\', ROOT);
-        $path = preg_replace("/^${escaped_root}/", '', $backtrace[1]['file']);
-        $line = $backtrace[1]['line'];
-        $date = date_i18n('Y-m-d H:i:s');
-        $eol = PHP_EOL;
-        $header = "${upper_flag} :: ${path}(${line}) [${date}]${eol}";
-        fwrite($fp, $header);
-        foreach ($args as $value) {
-            fwrite($fp, var_export($value, true) . PHP_EOL . PHP_EOL);
-        }
-        fclose($fp);
     }
 }
