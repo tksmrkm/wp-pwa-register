@@ -13,12 +13,17 @@ class Notifications
     private $firebase_server_key;
     private $customizer;
     private $logs;
+    private $delete_flag = true;
+    private $hard_delete_flag = false;
 
     public function init($container)
     {
         $this->customizer = $container['customizer'];
         $this->logs = $container['logs'];
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
+        $this->delete_flag = $this->customizer->get_theme_mod('enable-deletion', true);
+        $this->hard_delete_flag = $this->customizer->get_theme_mod('enable-hard-deletion', false);
+
         add_action('wp_insert_post', [$this, 'wpInsertPost']);
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('publish_pwa_notifications', [$this, 'publish']);
@@ -96,7 +101,32 @@ class Notifications
 
         while ($page >= 0) {
             $offset = $page * $limit;
-            $query = "SELECT Post.ID as id, Meta.meta_value as token FROM {$wpdb->postmeta} as `Meta` INNER JOIN {$wpdb->posts} as `Post` ON Meta.post_id = Post.ID WHERE Meta.meta_key = 'token' AND Post.post_type = 'pwa_users' AND Post.post_status = 'draft' ORDER BY Post.ID DESC LIMIT {$limit} OFFSET {$offset}";
+$query = <<<QUERY
+SELECT
+    Post.ID as id,
+    Token.meta_value as token
+FROM
+    {$wpdb->posts} as `Post`
+LEFT JOIN
+    {$wpdb->postmeta} as `Token`
+        ON Token.post_id = Post.ID
+        AND Token.meta_key = 'token'
+LEFT JOIN
+    {$wpdb->postmeta} as `Deleted`
+        ON Deleted.post_id = Post.ID
+        AND Deleted.meta_key = 'deleted'
+WHERE
+    Post.post_status = 'draft'
+    AND
+    Post.post_type = 'pwa_users'
+    AND
+    Deleted.meta_value IS NULL
+ORDER BY
+    Post.ID
+DESC
+LIMIT {$limit}
+OFFSET {$offset}
+QUERY;
             $users = $wpdb->get_results($query);
             if (count($users)) {
                 $retval = [
@@ -105,13 +135,13 @@ class Notifications
                 ];
                 foreach ($users as $user) {
                     if (in_array($user->token, $sent_list)) {
-                        $duplicated_list[] = $user->token;
+                        $duplicated_list[] = $user->id;
                         continue;
                     }
 
                     $retval['endpoints'][] = $user->token;
                     $retval['ids'][] = $user->id;
-                    $sent_list[] = $user->token;
+                    $sent_list[] = $user->id;
                 }
                 yield $retval;
                 $page++;
@@ -123,7 +153,7 @@ class Notifications
         $this->logs->debug([
             'duplicated' => count($duplicated_list),
             'sent' => count($sent_list),
-            'duplicated_data' => $duplicated_list
+            'duplicated_list' => $duplicated_list
         ]);
     }
 
@@ -186,8 +216,16 @@ class Notifications
                         'id' => $ids['ids'][$key]
                     ]);
 
-                    if (preg_match('/NotRegistered/', $result->error)) {
-                        wp_delete_post($ids['ids'][$key]);
+                    if ($this->delete_flag) {
+                        if (preg_match('/NotRegistered/', $result->error)) {
+                            if ($this->hard_delete_flag) {
+                                // hard delete
+                                wp_delete_post($ids['ids'][$key]);
+                            } else {
+                                // soft delete
+                                update_post_meta($ids['ids'][$key], 'deleted', true);
+                            }
+                        }
                     }
                 }
             }
