@@ -15,7 +15,7 @@ class Logs
     public function init()
     {
         $monolog = new Logger('Log');
-        $handler = new RotatingFileHandler(ROOT . DS . 'logs' . DS . 'debug.log');
+        $handler = new RotatingFileHandler(ROOT . DS . 'logs' . DS . 'debug.log', 7);
         $log_format = "%datetime% > %context.file%::%context.line% %extra%\n%level_name% > %message%\n\n";
         $formatter = new LineFormatter($log_format, 'Y-m-d H:i:s', true, true);
         $handler->setFormatter($formatter);
@@ -32,7 +32,7 @@ class Logs
             $backtrace = debug_backtrace();
             $file = str_replace(ROOT . DS, '', $backtrace[0]['file']);
             $line = $backtrace[0]['line'];
-            $value = $arg_number > 1 ? var_export(func_get_args(), true): func_get_arg(0);
+            $value = $arg_number > 1 ? var_export(func_get_args(), true): var_export(func_get_arg(0), true);
             $this->monolog->debug($value, [
                 'file' => $file,
                 'line' => $line
