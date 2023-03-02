@@ -2,8 +2,6 @@
 
 namespace WpPwaRegister;
 
-use WP_Query;
-
 class Notifications
 {
     use traits\Singleton;
@@ -52,15 +50,54 @@ class Notifications
         $had_ever = get_post_meta($post_id, '_published_ever', true);
 
         if (!$had_ever) {
-            $error = $this->sendMessage($post_id);
+            $retval = $this->sendMessage($post_id);
+
+            /**
+             * @param update_list {id: string, registration_id: string}[]
+             * @param success number
+             * @param failure number
+             * @param delete_list id[]
+             */
+            $reduced_retval = array_reduce($retval, function($prev, $current) {
+                return [
+                    'update_list' => array_merge($prev['update_list'], $current['update_list']),
+                    'success' => $prev['success'] + $current['success'],
+                    'failure' => $prev['failure'] + $current['failure'],
+                    'delete_list' => array_merge($prev['delete_list'], $current['delete_list']),
+                ];
+            });
+
+            $this->logs->debug($reduced_retval);
+
             $this->logs->debug([
                 'after sendMessage()',
                 microtime(true) - $start
             ]);
 
+            /**
+             * Registration ID update
+             */
+            foreach ($reduced_retval['update_list'] as $user) {
+                update_post_meta($user['id'], 'token', $user['registration_id']);
+            }
+
+            /**
+             * NotRegistered deletion
+             */
+            foreach ($reduced_retval['delete_list'] as $id) {
+                if ($this->delete_flag) {
+                    if ($this->hard_delete_flag) {
+                        wp_delete_post($id);
+                    } else {
+                        // soft delete
+                        update_post_meta($id, 'deleted', true);
+                    }
+                }
+            }
+
             update_post_meta($post_id, '_published_ever', true);
-            update_post_meta($post_id, '_reach_success', wp_count_posts('pwa_users')->draft - $error);
-            update_post_meta($post_id, '_reach_error', $error);
+            update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
+            update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
         }
 
         $this->logs->debug([
@@ -71,15 +108,15 @@ class Notifications
 
     private function sendMessage($post_id)
     {
-        $error = 0;
+        $retval = [];
         $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
 
         foreach ($this->getUsers() as $users) {
             set_time_limit($max_execution_time);
-            $error += $this->curl($users, $post_id);
+            $retval[] = $this->curl($users, $post_id);
         }
 
-        return $error;
+        return $retval;
     }
 
     /**
@@ -101,33 +138,38 @@ class Notifications
 
         while ($page >= 0) {
             $offset = $page * $limit;
-$query = <<<QUERY
-SELECT
-    Post.ID as id,
-    Token.meta_value as token
-FROM
-    {$wpdb->posts} as `Post`
-LEFT JOIN
-    {$wpdb->postmeta} as `Token`
-        ON Token.post_id = Post.ID
-        AND Token.meta_key = 'token'
-LEFT JOIN
-    {$wpdb->postmeta} as `Deleted`
-        ON Deleted.post_id = Post.ID
-        AND Deleted.meta_key = 'deleted'
-WHERE
-    Post.post_status = 'draft'
-    AND
-    Post.post_type = 'pwa_users'
-    AND
-    Deleted.meta_value IS NULL
-ORDER BY
-    Post.ID
-DESC
-LIMIT {$limit}
-OFFSET {$offset}
-QUERY;
+
+            $query = <<<QUERY
+            SELECT
+                Post.ID as id,
+                Token.meta_value as token
+            FROM
+                {$wpdb->posts} as `Post`
+            LEFT JOIN
+                {$wpdb->postmeta} as `Token`
+                    ON Token.post_id = Post.ID
+                    AND Token.meta_key = 'token'
+            LEFT JOIN
+                {$wpdb->postmeta} as `Deleted`
+                    ON Deleted.post_id = Post.ID
+                    AND Deleted.meta_key = 'deleted'
+            WHERE
+                Post.post_status = 'draft'
+                AND
+                Post.post_type = 'pwa_users'
+                AND
+                Deleted.meta_value IS NULL
+                AND
+                Token.meta_value IS NOT NULL
+            ORDER BY
+                Post.ID
+            DESC
+            LIMIT {$limit}
+            OFFSET {$offset}
+            QUERY;
+
             $users = $wpdb->get_results($query);
+
             if (count($users)) {
                 $retval = [
                     'endpoints' => [],
@@ -197,16 +239,20 @@ QUERY;
     {
         $response = json_decode($response);
 
-        $this->logs->debug([
-            'msg' => 'error_check()',
+        $retval = [
+            'update_list' => [],
             'success' => $response->success,
-            'failure' => $response->failure
-        ]);
+            'failure' => $response->failure,
+            'delete_list' => []
+        ];
 
         if (!$dry) {
             foreach ($response->results as $key => $result) {
                 if (isset($result->registration_id)) {
-                    update_post_meta($ids['ids'][$key], 'token', $result->registration_id);
+                    $retval['update_list'][] = [
+                        'id' => $ids['ids'][$key],
+                        'registration_id' => $result->registration_id
+                    ];
                 }
 
                 if (isset($result->error)) {
@@ -216,22 +262,14 @@ QUERY;
                         'id' => $ids['ids'][$key]
                     ]);
 
-                    if ($this->delete_flag) {
-                        if (preg_match('/NotRegistered/', $result->error)) {
-                            if ($this->hard_delete_flag) {
-                                // hard delete
-                                wp_delete_post($ids['ids'][$key]);
-                            } else {
-                                // soft delete
-                                update_post_meta($ids['ids'][$key], 'deleted', true);
-                            }
-                        }
+                    if (preg_match('/NotRegistered/', $result->error)) {
+                        $retval['delete_list'][] = $ids['ids'][$key];
                     }
                 }
             }
         }
 
-        return $response->failure;
+        return $retval;
     }
 
     public function restApiInit()
