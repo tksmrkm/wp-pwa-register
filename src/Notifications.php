@@ -38,6 +38,16 @@ class Notifications
         header('Cache-Control: s-maxage=' . $maxage);
     }
 
+    public function reducer($prev, $current)
+    {
+        return [
+            'update_list' => array_merge($prev['update_list'] ?? [], $current['update_list']),
+            'success' => ($prev['success'] ?? 0) + $current['success'],
+            'failure' => ($prev['failure'] ?? 0) + $current['failure'],
+            'delete_list' => array_merge($prev['delete_list'] ?? [], $current['delete_list']),
+        ];
+    }
+
     public function publish($post_id)
     {
         $start = microtime(true);
@@ -58,14 +68,7 @@ class Notifications
              * @param failure number
              * @param delete_list id[]
              */
-            $reduced_retval = array_reduce($retval, function($prev, $current) {
-                return [
-                    'update_list' => array_merge($prev['update_list'], $current['update_list']),
-                    'success' => $prev['success'] + $current['success'],
-                    'failure' => $prev['failure'] + $current['failure'],
-                    'delete_list' => array_merge($prev['delete_list'], $current['delete_list']),
-                ];
-            });
+            $reduced_retval = array_reduce($retval, [$this, 'reducer']);
 
             $this->logs->debug($reduced_retval);
 
@@ -73,6 +76,10 @@ class Notifications
                 'after sendMessage()',
                 microtime(true) - $start
             ]);
+
+            update_post_meta($post_id, '_published_ever', true);
+            update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
+            update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
 
             /**
              * Registration ID update
@@ -84,8 +91,22 @@ class Notifications
             /**
              * NotRegistered deletion
              */
-            foreach ($reduced_retval['delete_list'] as $id) {
-                if ($this->delete_flag) {
+            $deletion_limit = (int)$this->customizer->get_theme_mod('deletion-limit', 0);
+            $deletion_list = $deletion_limit > 0 ? array_filter($reduced_retval['delete_list'], function($item, $index) use ($deletion_limit) {
+                return $index < $deletion_limit;
+            }): $reduced_retval['delete_list'];
+
+            $this->logs->debug($deletion_limit, $deletion_list);
+
+            if ($this->delete_flag) {
+                $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
+                $this->logs->debug($this->delete_flag, $this->hard_delete_flag, $max_execution_time);
+
+                foreach ($deletion_list as $index => $id) {
+                    set_time_limit($max_execution_time);
+
+                    $this->logs->debug($index, $id);
+
                     if ($this->hard_delete_flag) {
                         wp_delete_post($id);
                     } else {
@@ -94,10 +115,6 @@ class Notifications
                     }
                 }
             }
-
-            update_post_meta($post_id, '_published_ever', true);
-            update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
-            update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
         }
 
         $this->logs->debug([
@@ -110,10 +127,11 @@ class Notifications
     {
         $retval = [];
         $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
+        $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
 
         foreach ($this->getUsers() as $users) {
             set_time_limit($max_execution_time);
-            $retval[] = $this->curl($users, $post_id);
+            $retval[] = $this->curl($users, $post_id, $is_dry);
         }
 
         return $retval;
@@ -246,25 +264,17 @@ class Notifications
             'delete_list' => []
         ];
 
-        if (!$dry) {
-            foreach ($response->results as $key => $result) {
-                if (isset($result->registration_id)) {
-                    $retval['update_list'][] = [
-                        'id' => $ids['ids'][$key],
-                        'registration_id' => $result->registration_id
-                    ];
-                }
+        foreach ($response->results as $key => $result) {
+            if (isset($result->registration_id)) {
+                $retval['update_list'][] = [
+                    'id' => $ids['ids'][$key],
+                    'registration_id' => $result->registration_id
+                ];
+            }
 
-                if (isset($result->error)) {
-                    $this->logs->debug([
-                        'msg' => 'has error',
-                        'result' => $result,
-                        'id' => $ids['ids'][$key]
-                    ]);
-
-                    if (preg_match('/NotRegistered/', $result->error)) {
-                        $retval['delete_list'][] = $ids['ids'][$key];
-                    }
+            if (isset($result->error)) {
+                if (preg_match('/NotRegistered/', $result->error)) {
+                    $retval['delete_list'][] = $ids['ids'][$key];
                 }
             }
         }
