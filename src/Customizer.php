@@ -29,7 +29,10 @@ class Customizer
         ],
         'register' => [
             'title' => 'Register'
-        ]
+        ],
+        'notification' => [
+            'title' => 'Notification'
+        ],
     ];
 
     private $settings = [
@@ -198,6 +201,48 @@ class Customizer
                 'section' => 'manifest',
                 'label' => 'ICON type',
                 'description' => 'To specify the image type (e.g.) image/png'
+            ]
+        ],
+        'enable-dry-mode' => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'DRYモード',
+                'type' => 'checkbox'
+            ]
+        ],
+        'enable-deletion' => [
+            'option' => [
+                'default' => true
+            ],
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'PWA USERの削除処理を実行する',
+                'type' => 'checkbox',
+                'description' => 'error statusがNotRegisteredのときに削除処理を実行する'
+            ]
+        ],
+        'enable-hard-deletion' => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'PWA USERを物理削除する',
+                'type' => 'checkbox',
+                'description' => 'error statusがNotRegisteredのときに物理削除する。off時はdeletedフラグによる論理削除'
+            ]
+        ],
+        'deletion-limit' => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => '削除件数上限',
+                'type' => 'number'
+            ],
+            'option' => [
+                'default' => 0
             ]
         ]
     ];

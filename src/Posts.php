@@ -22,6 +22,9 @@ class Posts
 
     private function registerPwaUsers()
     {
+        $cap = 'manage_pwa_users';
+        $admin = get_role('administrator');
+        $admin->add_cap($cap);
         register_post_type('pwa_users', [
             'label' => 'pwa_users',
             'labels' => [
@@ -37,9 +40,9 @@ class Posts
             ],
             'capabilities' => [
                 'read_post' => 'read',
-                'read_private_posts' => 'manage_pwa_users',
-                'edit_post' => 'manage_pwa_users',
-                'edit_posts' => 'manage_pwa_users',
+                'read_private_posts' => $cap,
+                'edit_post' => $cap,
+                'edit_posts' => $cap,
                 'edit_others_posts' => 'edit_others_posts',
                 'delete_post' => 'delete_others_posts',
                 'delete_posts' => 'delete_others_posts',

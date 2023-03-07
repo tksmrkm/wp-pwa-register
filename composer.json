@@ -1,0 +1,17 @@
+{
+    "name": "nis/wp-pwa-register",
+    "autoload": {
+        "psr-4": {
+            "WpPwaRegister\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "tksmrkm",
+            "email": "nis.murakami@gmail.com"
+        }
+    ],
+    "require": {
+        "monolog/monolog": "^2.9"
+    }
+}
