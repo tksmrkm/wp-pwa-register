@@ -156,6 +156,8 @@ class Notifications
 
         $sent_list = [];
         $duplicated_list = [];
+        $duplicated_posts = [];
+        $duplicated_meta = [];
 
         while ($page >= 0) {
             $offset = $page * $limit;
@@ -163,6 +165,7 @@ class Notifications
             $query = <<<QUERY
             SELECT
                 Post.ID as id,
+                Token.meta_id as meta_id,
                 Token.meta_value as token
             FROM
                 {$wpdb->posts} as `Post`
@@ -199,7 +202,8 @@ class Notifications
 
                 foreach ($users as $user) {
                     if (in_array($user->token, $sent_list)) {
-                        $duplicated_list[] = $user->id;
+                        $duplicated_posts[] = $user->id;
+                        $duplicated_meta[] = $user->meta_id;
                         continue;
                     }
 
@@ -217,9 +221,11 @@ class Notifications
         }
 
         $this->logs->debug([
-            'duplicated' => count($duplicated_list),
             'sent' => count($sent_list),
-            'duplicated_list' => $duplicated_list
+            'duplicated' => [
+                'posts' => $duplicated_posts,
+                'meta' => $duplicated_meta
+            ]
         ]);
     }
 
