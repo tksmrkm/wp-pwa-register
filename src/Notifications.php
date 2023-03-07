@@ -194,7 +194,7 @@ class Notifications
                     'ids' => []
                 ];
                 foreach ($users as $user) {
-                    if (in_array($user->token, $sent_list)) {
+                    if (in_array($user->id, $sent_list)) {
                         $duplicated_list[] = $user->id;
                         continue;
                     }
