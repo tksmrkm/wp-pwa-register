@@ -101,6 +101,7 @@ class Notifications
             if ($this->delete_flag) {
                 $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
                 $this->logs->debug($this->delete_flag, $this->hard_delete_flag, $max_execution_time);
+                $delete_result = [];
 
                 foreach ($deletion_list as $index => $id) {
                     set_time_limit($max_execution_time);
@@ -108,12 +109,14 @@ class Notifications
                     $this->logs->debug($index, $id);
 
                     if ($this->hard_delete_flag) {
-                        wp_delete_post($id);
+                        $delete_result[] = wp_delete_post($id);
                     } else {
                         // soft delete
-                        update_post_meta($id, 'deleted', true);
+                        $delete_result[] = update_post_meta($id, 'deleted', true);
                     }
                 }
+
+                $this->logs->debug($delete_result);
             }
         }
 
@@ -193,17 +196,20 @@ class Notifications
                     'endpoints' => [],
                     'ids' => []
                 ];
+
                 foreach ($users as $user) {
-                    if (in_array($user->id, $sent_list)) {
+                    if (in_array($user->token, $sent_list)) {
                         $duplicated_list[] = $user->id;
                         continue;
                     }
 
                     $retval['endpoints'][] = $user->token;
                     $retval['ids'][] = $user->id;
-                    $sent_list[] = $user->id;
+                    $sent_list[] = $user->token;
                 }
+
                 yield $retval;
+
                 $page++;
             } else {
                 $page = -1;
