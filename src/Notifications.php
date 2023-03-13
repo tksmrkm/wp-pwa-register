@@ -13,6 +13,10 @@ class Notifications
     private $logs;
     private $delete_flag = true;
     private $hard_delete_flag = false;
+    private $duplicated = [
+        'posts' => [],
+        'meta' => []
+    ];
 
     public function init($container)
     {
@@ -69,6 +73,7 @@ class Notifications
              * @param delete_list id[]
              */
             $reduced_retval = array_reduce($retval, [$this, 'reducer']);
+            $reduced_deletion_list = array_merge($retval['delete_list'], $this->duplicated['posts']);
 
             $this->logs->debug($reduced_retval);
 
@@ -92,9 +97,9 @@ class Notifications
              * NotRegistered deletion
              */
             $deletion_limit = (int)$this->customizer->get_theme_mod('deletion-limit', 0);
-            $deletion_list = $deletion_limit > 0 ? array_filter($reduced_retval['delete_list'], function($item, $index) use ($deletion_limit) {
+            $deletion_list = $deletion_limit > 0 ? array_filter($reduced_deletion_list, function($item, $index) use ($deletion_limit) {
                 return $index < $deletion_limit;
-            }): $reduced_retval['delete_list'];
+            }): $reduced_deletion_list;
 
             $this->logs->debug($deletion_limit, $deletion_list);
 
@@ -155,9 +160,6 @@ class Notifications
         $limit = 1000;
 
         $sent_list = [];
-        $duplicated_list = [];
-        $duplicated_posts = [];
-        $duplicated_meta = [];
 
         while ($page >= 0) {
             $offset = $page * $limit;
@@ -202,8 +204,8 @@ class Notifications
 
                 foreach ($users as $user) {
                     if (in_array($user->token, $sent_list)) {
-                        $duplicated_posts[] = $user->id;
-                        $duplicated_meta[] = $user->meta_id;
+                        $this->duplicated['posts'][] = $user->id;
+                        $this->duplicated['meta'][] = $user->meta_id;
                         continue;
                     }
 
@@ -222,10 +224,7 @@ class Notifications
 
         $this->logs->debug([
             'sent' => count($sent_list),
-            'duplicated' => [
-                'posts' => $duplicated_posts,
-                'meta' => $duplicated_meta
-            ]
+            'duplicated' => $this->duplicated
         ]);
     }
 
