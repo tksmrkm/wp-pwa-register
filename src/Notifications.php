@@ -14,6 +14,7 @@ class Notifications
     private $customizer;
     private $logs;
     private $delete_flag = true;
+    private $deletion_limit = 0;
     private $hard_delete_flag = false;
     private $duplicated = [
         'posts' => [],
@@ -54,88 +55,100 @@ class Notifications
         ];
     }
 
+    public function deletionListFilter($item, $index)
+    {
+        return $index < $this->deletion_limit;
+    }
+
+    private function getDeletionList($list)
+    {
+        $this->logs->debug($list, $this->deletion_limit);
+
+        if ($this->deletion_limit > 0) {
+            $filtered = array_filter($list, [$this, 'deletionListFilter'], ARRAY_FILTER_USE_BOTH);
+
+            return array_values($filtered);
+        }
+
+        return $list;
+    }
+
     public function publish($post_id)
     {
-        try {
-            $start = microtime(true);
+        $start = microtime(true);
+
+        $this->logs->debug([
+            'publish_start',
+            microtime(true) - $start
+        ]);
+
+        $had_ever = get_post_meta($post_id, '_published_ever', true);
+
+        if (!$had_ever) {
+            $retval = $this->sendMessage($post_id);
+
+            /**
+             * @param update_list {id: string, registration_id: string}[]
+             * @param success number
+             * @param failure number
+             * @param delete_list id[]
+             */
+            $reduced_retval = array_reduce($retval, [$this, 'reducer']);
+            $reduced_deletion_list = array_merge([], $reduced_retval['delete_list'], $this->duplicated['posts']);
 
             $this->logs->debug([
-                'publish_start',
+                'after sendMessage()',
                 microtime(true) - $start
             ]);
 
-            $had_ever = get_post_meta($post_id, '_published_ever', true);
+            update_post_meta($post_id, '_published_ever', true);
+            update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
+            update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
 
-            if (!$had_ever) {
-                $retval = $this->sendMessage($post_id);
-
-                /**
-                 * @param update_list {id: string, registration_id: string}[]
-                 * @param success number
-                 * @param failure number
-                 * @param delete_list id[]
-                 */
-                $reduced_retval = array_reduce($retval, [$this, 'reducer']);
-                $reduced_deletion_list = array_merge([], $reduced_retval['delete_list'], $this->duplicated['posts']);
-
-                $this->logs->debug($reduced_retval);
-
-                $this->logs->debug([
-                    'after sendMessage()',
-                    microtime(true) - $start
-                ]);
-
-                update_post_meta($post_id, '_published_ever', true);
-                update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
-                update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
-
-                /**
-                 * Registration ID update
-                 */
-                foreach ($reduced_retval['update_list'] as $user) {
-                    update_post_meta($user['id'], 'token', $user['registration_id']);
-                }
-
-                /**
-                 * NotRegistered deletion
-                 */
-                $deletion_limit = (int)$this->customizer->get_theme_mod('deletion-limit', 0);
-                $deletion_list = $deletion_limit > 0 ? array_filter($reduced_deletion_list, function($item, $index) use ($deletion_limit) {
-                    return $index < $deletion_limit;
-                }): $reduced_deletion_list;
-
-                $this->logs->debug($deletion_limit, $deletion_list);
-                $this->logs->debug($this->delete_flag, $this->hard_delete_flag);
-
-                if ($this->delete_flag) {
-                    $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
-                    $delete_result = [];
-
-                    foreach ($deletion_list as $index => $id) {
-                        set_time_limit($max_execution_time);
-
-                        $this->logs->debug($index, $id);
-
-                        if ($this->hard_delete_flag) {
-                            $delete_result[] = wp_delete_post($id);
-                        } else {
-                            // soft delete
-                            $delete_result[] = update_post_meta($id, 'deleted', true);
-                        }
-                    }
-
-                    update_post_meta($post_id, '_reach_deleted', count($delete_result));
-                    $this->logs->debug($delete_result);
-                }
+            /**
+             * Registration ID update
+             */
+            foreach ($reduced_retval['update_list'] as $user) {
+                update_post_meta($user['id'], 'token', $user['registration_id']);
             }
 
-            $this->logs->debug([
-                'publish_finish',
-                microtime(true) - $start
-            ]);
-        } catch (Exception $e) {
-            $this->logs->debug($e->getMessage(), $e);
+            /**
+             * NotRegistered deletion
+             */
+            $this->deletion_limit = (int)$this->customizer->get_theme_mod('deletion-limit', 0);
+            $deletion_list = $this->getDeletionList($reduced_deletion_list);
+
+            if ($this->delete_flag) {
+                $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
+                $delete_result = [];
+
+                $this->logs->debug($deletion_list);
+                foreach ($deletion_list as $id) {
+                    set_time_limit($max_execution_time);
+
+                    if ($this->hard_delete_flag) {
+                        $delete_result[] = wp_delete_post($id);
+                    } else {
+                        // soft delete
+                        $delete_result[] = update_post_meta($id, 'deleted', true);
+                    }
+                }
+
+                $deleted_count = count(
+                    array_filter($delete_result, function($item) {
+                        return $item !== false;
+                    })
+                );
+
+                $this->logs->debug($delete_result, $deleted_count);
+                update_post_meta($post_id, '_reach_deleted', $deleted_count);
+            }
         }
+
+        $this->logs->debug([
+            'publish_finish',
+            microtime(true) - $start
+        ]);
     }
 
     private function sendMessage($post_id)
@@ -228,11 +241,6 @@ class Notifications
                 $page = -1;
             }
         }
-
-        $this->logs->debug([
-            'sent' => count($sent_list),
-            'duplicated' => $this->duplicated
-        ]);
     }
 
     private function curl($ids, $post_id, $dry = false)
