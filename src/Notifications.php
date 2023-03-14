@@ -124,6 +124,7 @@ class Notifications
                         }
                     }
 
+                    update_post_meta($post_id, '_reach_deleted', count($delete_result));
                     $this->logs->debug($delete_result);
                 }
             }
