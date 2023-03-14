@@ -81,16 +81,42 @@ class Posts
         ] );
     }
 
+    private $columns = [
+        [
+            'key' => '_reach_success',
+            'label' => '送信',
+            'default' => 0
+        ],
+        [
+            'key' => '_reach_error',
+            'label' => 'エラー',
+            'default' => 0
+        ],
+        [
+            'key' => '_reach_deleted',
+            'label' => '削除',
+            'default' => 0
+        ],
+    ];
+
     public function firebaseNotificationsManageColumns($columns)
     {
-        $columns['_reach_number'] = '到達/エラー';
+        foreach ($this->columns as $column) {
+            $columns[$column['key']] = $column['label'];
+        }
         return $columns;
     }
 
     public function addCustomColumn($column, $post_id)
     {
-        if ($column === '_reach_number') {
-            echo get_post_meta($post_id, '_reach_success', true), ' / ', get_post_meta($post_id, '_reach_error', true);
+        $filtered = array_filter($this->columns, function($_column) use ($column) {
+            return $column === $_column['key'];
+        });
+
+        if (count($filtered)) {
+            $meta_column = array_pop($filtered);
+            $meta = get_post_meta($post_id, $meta_column['key'], true);
+            echo $meta;
         }
     }
 }
