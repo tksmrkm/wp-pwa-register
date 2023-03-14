@@ -2,6 +2,8 @@
 
 namespace WpPwaRegister;
 
+use Exception;
+
 class Notifications
 {
     use traits\Singleton;
@@ -73,7 +75,7 @@ class Notifications
              * @param delete_list id[]
              */
             $reduced_retval = array_reduce($retval, [$this, 'reducer']);
-            $reduced_deletion_list = array_merge($retval['delete_list'], $this->duplicated['posts']);
+            $reduced_deletion_list = array_merge([], $reduced_retval['delete_list'], $this->duplicated['posts']);
 
             $this->logs->debug($reduced_retval);
 
@@ -102,10 +104,10 @@ class Notifications
             }): $reduced_deletion_list;
 
             $this->logs->debug($deletion_limit, $deletion_list);
+            $this->logs->debug($this->delete_flag, $this->hard_delete_flag);
 
             if ($this->delete_flag) {
                 $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
-                $this->logs->debug($this->delete_flag, $this->hard_delete_flag, $max_execution_time);
                 $delete_result = [];
 
                 foreach ($deletion_list as $index => $id) {
