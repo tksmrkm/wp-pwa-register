@@ -20,6 +20,7 @@ class Notifications
         'posts' => [],
         'meta' => []
     ];
+    private $start_time;
 
     public function init($container)
     {
@@ -76,6 +77,7 @@ class Notifications
     public function publish($post_id)
     {
         $start = microtime(true);
+        $this->start_time = $start;
 
         $this->logs->debug([
             'publish_start',
@@ -158,6 +160,11 @@ class Notifications
         $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
 
         foreach ($this->getUsers() as $users) {
+            $this->logs->debug([
+                'sending messages',
+                microtime(true) - $this->start_time
+            ]);
+
             set_time_limit($max_execution_time);
             $retval[] = $this->curl($users, $post_id, $is_dry);
         }
