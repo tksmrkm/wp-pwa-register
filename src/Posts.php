@@ -95,7 +95,7 @@ class Posts
             $error = get_post_meta($post_id, '_reach_error', true) ?: '-';
             $deleted = get_post_meta($post_id, '_reach_deleted', true) ?: '-';
 
-            echo "${success} / ${error} / ${deleted}";
+            echo "{$success} / {$error} / {$deleted}";
         }
     }
 }
