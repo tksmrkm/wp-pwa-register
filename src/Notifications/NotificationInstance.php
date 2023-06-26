@@ -1,13 +1,13 @@
 <?php
 
-namespace WpPwaRegister;
+namespace WpPwaRegister\Notifications;
 
 use WP_Post;
 
 class NotificationInstance
 {
     const FCM_SERVER = 'https://fcm.googleapis.com/fcm/send';
-    const POST_KEY = '_notification_instance';
+    const POST_KEY = 'notificationinstance';
     const PUBLISHED_FLAG_KEY = '_published_ever';
     const MOD_REMAINDER_KEY = 'mod_remainder';
 
@@ -33,8 +33,9 @@ class NotificationInstance
     public function init()
     {
         register_post_type(self::POST_KEY, [
+            'label' => 'PUSH分割実体',
             'public' => false,
-            'show_in_rest' => false
+            'show_in_rest' => false,
         ]);
     }
 
@@ -119,6 +120,8 @@ class NotificationInstance
         ]);
 
         $had_ever = get_post_meta($post_id, self::PUBLISHED_FLAG_KEY, true);
+
+        $this->logs->debug($had_ever);
 
         if (!$had_ever) {
             $retval = $this->sendMessage($post_id);
@@ -301,49 +304,5 @@ class NotificationInstance
         }
 
         return $retval;
-    }
-
-    /**
-     * save_post action hook
-     */
-    public function hoge($post_id, WP_Post $post, $updated)
-    {
-        // @todo self::POST_KEY
-        if ($post->post_type === self::POST_KEY) {
-            if (!$updated) {
-                $proccessed = get_post_meta($post_id, 'proccessed', true) ?? false;
-                $mod_base = $this->customizer->get_theme_mod('mod-base');
-                $step = $this->customizer->get_theme_mod('separate-step');
-
-                if (!$proccessed) {
-                    // @todo self::POST_KEY
-                    $model = [
-                        'post_type' => self::POST_KEY,
-                        'post_title' => $post->post_title,
-                        'post_date' => $post->post_date
-                    ];
-
-                    $insert_posts = [];
-
-                    for ($i = 0; $i < $mod_base; $i++) {
-                        $insert_posts[] = array_merge([], $model, [
-                            'post_date' => date('Y-m-d H:i:s', strtotime($post->post_date) + ($i * 60))
-                        ]);
-                    }
-
-                    $inserted_post_ids = wp_insert_post($insert_posts);
-
-                    $meta_headline = get_post_meta($post_id, 'headline', true);
-                    $meta_icon = get_post_meta($post_id, 'icon', true);
-                    $meta_link = get_post_meta($post_id, 'link', true);
-
-                    foreach ($inserted_post_ids as $id) {
-                        update_post_meta($id, 'headline', $meta_headline);
-                        update_post_meta($id, 'icon', $meta_icon);
-                        update_post_meta($id, 'link', $meta_link);
-                    }
-                }
-            }
-        }
     }
 }
