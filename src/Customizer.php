@@ -244,6 +244,28 @@ class Customizer
             'option' => [
                 'default' => 0
             ]
+        ],
+        'split-transfer' => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => '分割送信件数',
+                'type' => 'number',
+                'description' => 'WIP: プッシュを分割送信するための設定。'
+            ],
+            'option' => [
+                'default' => 1
+            ]
+        ],
+        'split-tick' => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => '分割送信間隔（秒）',
+                'type' => 'number',
+                'description' => 'WIP: プッシュを分割送信するための設定。'
+            ],
+            'option' => [
+                'default' => 180
+            ]
         ]
     ];
 

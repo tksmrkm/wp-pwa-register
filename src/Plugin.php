@@ -20,7 +20,9 @@ class Plugin
         ServiceWorker::getInstance($container);
         Firebase::getInstance($container);
         Posts::getInstance();
-        Notifications::getInstance($container);
+        Notifications\Notifications::getInstance($container);
+        new Notifications\Post();
+        new Notifications\NotificationInstance($container['logs'], $container['customizer']);
         Users::getInstance();
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);

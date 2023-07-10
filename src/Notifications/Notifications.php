@@ -1,20 +1,25 @@
 <?php
 
-namespace WpPwaRegister;
+namespace WpPwaRegister\Notifications;
 
-use Exception;
+use WP_Post;
+use WpPwaRegister\traits\Singleton;
+use WpPwaRegister\Notifications\Post;
 
 class Notifications
 {
-    use traits\Singleton;
-    
+    use Singleton;
+
     const FCM_SERVER = 'https://fcm.googleapis.com/fcm/send';
+    const META_PSEUDO_KEY = '_pseudo';
 
     private $firebase_server_key;
     private $customizer;
     private $logs;
     private $delete_flag = true;
     private $deletion_limit = 0;
+    private $split_transfer = 1;
+    private $split_tick = 180;
     private $hard_delete_flag = false;
     private $duplicated = [
         'posts' => [],
@@ -29,9 +34,12 @@ class Notifications
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
         $this->delete_flag = $this->customizer->get_theme_mod('enable-deletion', true);
         $this->hard_delete_flag = $this->customizer->get_theme_mod('enable-hard-deletion', false);
+        $this->split_transfer = $this->customizer->get_theme_mod('split-transfer', $this->split_transfer);
+        $this->split_tick = $this->customizer->get_theme_mod('split-tick', $this->split_tick);
 
         add_action('wp_insert_post', [$this, 'wpInsertPost']);
         add_action('rest_api_init', [$this, 'restApiInit']);
+        add_action('save_post', [$this, 'postSave'], 10, 3);
         add_action('publish_pwa_notifications', [$this, 'publish']);
 
         $pattern = "/^\/wp-json\/wp\/v2\/pwa_notifications\/.+$/";
@@ -76,6 +84,13 @@ class Notifications
 
     public function publish($post_id)
     {
+        $pseudo = get_post_meta($post_id, self::META_PSEUDO_KEY, true);
+
+        if ($pseudo) {
+            $this->logs->debug('Skip pseudo post');
+            return false;
+        }
+
         $start = microtime(true);
         $this->start_time = $start;
 
@@ -104,8 +119,8 @@ class Notifications
             ]);
 
             update_post_meta($post_id, '_published_ever', true);
-            update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
-            update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
+            update_post_meta($post_id, Post::REACH_SUCCESS_KEY, $reduced_retval['success']);
+            update_post_meta($post_id, Post::REACH_ERROR_KEY, $reduced_retval['failure']);
 
             /**
              * Registration ID update
@@ -143,7 +158,7 @@ class Notifications
                 );
 
                 $this->logs->debug($delete_result, $deleted_count);
-                update_post_meta($post_id, '_reach_deleted', $deleted_count);
+                update_post_meta($post_id, Post::REACH_DELETED_KEY, $deleted_count);
             }
         }
 
@@ -354,6 +369,76 @@ class Notifications
             add_post_meta($post_id, 'link', '', true);
             add_post_meta($post_id, 'headline', '', true);
             add_post_meta($post_id, 'icon', '', true);
+        }
+    }
+
+    /**
+     * save_post action hook
+     */
+    public function postSave($post_id, WP_Post $post, $updated)
+    {
+        if ($post->post_type !== Post::POST_SLUG) {
+            $this->logs->debug(Post::POST_SLUG);
+            return true;
+        }
+
+        add_post_meta($post_id, self::META_PSEUDO_KEY, true, true);
+
+        if (
+            $post->post_status !== 'publish'
+            && $post->post_status !== 'future'
+        ) {
+            $this->logs->debug($post->post_status);
+            return true;
+        }
+
+        // セット済みフラグを取得
+        $processed = get_post_meta($post_id, 'processed', true);
+
+        $this->logs->debug($processed, $post_id, $post);
+
+        if (!$processed) {
+            // セット済みフラグを保存
+            add_post_meta($post_id, 'processed', true, true);
+
+            $mod_base = $this->customizer->get_theme_mod('split-transfer');
+            $step = $this->customizer->get_theme_mod('split-tick') ?? 180;
+
+            $model = [
+                'post_type' => NotificationInstance::POST_KEY,
+                'post_title' => $post->post_title,
+                'post_date' => $post->post_date,
+            ];
+
+            $inserted_post_ids = [];
+
+            for ($i = 0; $i < (int)$mod_base; $i++) {
+                $status = $i === 0 ? $post->post_status: 'future';
+
+                $inserted_post_ids[] = wp_insert_post(
+                    array_merge([], $model, [
+                        'post_date' => date('Y-m-d H:i:s', strtotime($post->post_date) + ($i * $step)),
+                        'post_status' => $status
+                    ])
+                    , true
+                );
+            }
+
+            $this->logs->debug($inserted_post_ids, $mod_base, $step);
+
+            $meta_headline = get_post_meta($post_id, 'headline', true);
+            $meta_icon = get_post_meta($post_id, 'icon', true);
+            $meta_link = get_post_meta($post_id, 'link', true);
+
+            add_post_meta($post_id, NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
+
+            foreach ($inserted_post_ids as $id) {
+                add_post_meta($id, 'headline', $meta_headline, true);
+                add_post_meta($id, 'icon', $meta_icon, true);
+                add_post_meta($id, 'link', $meta_link, true);
+            }
+        } else if ($post->post_status === 'future') {
+            // update
         }
     }
 }
