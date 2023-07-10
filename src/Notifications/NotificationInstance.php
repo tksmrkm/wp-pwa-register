@@ -36,6 +36,7 @@ class NotificationInstance
             'label' => 'PUSH分割実体',
             'public' => false,
             'show_in_rest' => false,
+            'show_ui' => true,
         ]);
     }
 
