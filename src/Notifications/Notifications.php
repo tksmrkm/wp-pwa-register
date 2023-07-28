@@ -432,10 +432,11 @@ class Notifications
 
             add_post_meta($post_id, NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
 
-            foreach ($inserted_post_ids as $id) {
+            foreach ($inserted_post_ids as $key => $id) {
                 add_post_meta($id, 'headline', $meta_headline, true);
                 add_post_meta($id, 'icon', $meta_icon, true);
                 add_post_meta($id, 'link', $meta_link, true);
+                add_post_meta($id, NotificationInstance::MOD_REMAINDER_KEY, $key, true);
             }
         } else if ($post->post_status === 'future') {
             // update

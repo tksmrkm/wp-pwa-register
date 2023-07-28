@@ -152,7 +152,7 @@ class NotificationInstance
         $retval = [];
         $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
         $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
-        $mod_base = $this->customizer->get_theme_mod('mod-base');
+        $mod_base = $this->customizer->get_theme_mod('split-transfer');
         $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true);
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
 
@@ -214,6 +214,8 @@ class NotificationInstance
             QUERY;
 
             $users = $wpdb->get_results($query);
+
+            $this->logs->debug(count($users), $query);
 
             if (count($users)) {
                 $retval = [
