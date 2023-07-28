@@ -37,6 +37,10 @@ class NotificationInstance
             'public' => false,
             'show_in_rest' => false,
             'show_ui' => true,
+            'supports' => [
+                'title',
+                'custom-fields'
+            ],
         ]);
     }
 
