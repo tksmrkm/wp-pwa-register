@@ -176,7 +176,8 @@ class Notifications
 
         foreach ($this->getUsers() as $users) {
             $this->logs->debug([
-                'sending messages',
+                'sending messages: (is_dry, time)',
+                $is_dry,
                 microtime(true) - $this->start_time
             ]);
 
@@ -443,11 +444,11 @@ class Notifications
                 );
             }
 
-            $this->logs->debug($inserted_post_ids, $mod_base, $step);
-
             $meta_headline = get_post_meta($post_id, 'headline', true);
             $meta_icon = get_post_meta($post_id, 'icon', true);
             $meta_link = get_post_meta($post_id, 'link', true);
+
+            $this->logs->debug($inserted_post_ids, $mod_base, $step);
 
             add_post_meta($post_id, NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
 

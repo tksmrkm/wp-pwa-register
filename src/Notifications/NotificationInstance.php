@@ -121,6 +121,7 @@ class NotificationInstance
 
         $this->logs->debug([
             'publish_start',
+            $post_id,
             microtime(true) - $start
         ]);
 
@@ -165,6 +166,8 @@ class NotificationInstance
                 'sending messages',
                 microtime(true) - $this->start_time
             ]);
+
+            $this->logs->debug($users, $post_id, $is_dry);
 
             set_time_limit($max_execution_time);
             $retval[] = $this->curl($users, $post_id, $is_dry);
