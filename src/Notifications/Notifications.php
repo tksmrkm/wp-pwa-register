@@ -176,7 +176,8 @@ class Notifications
 
         foreach ($this->getUsers() as $users) {
             $this->logs->debug([
-                'sending messages',
+                'sending messages: (is_dry, time)',
+                $is_dry,
                 microtime(true) - $this->start_time
             ]);
 
@@ -350,13 +351,32 @@ class Notifications
                     return;
                 }
 
+                // generate instance_ids
+                $meta_keys = get_post_meta($post->ID, NotificationInstance::POST_KEY, true);
+                $instances = explode(',', $meta_keys);
+                $filtered = array_filter($instances, function($id) {
+                    return strlen($id) > 0;
+                });
+                $instance_ids = array_map(function($id) {
+                    return trim($id);
+                }, $filtered);
+                // <-
+
                 foreach ($value as $key => $data) {
                     if (is_array($data)) {
                         foreach ($data as $record) {
                             add_post_meta($post->ID, $key, $record);
+
+                            foreach ($instance_ids as $id) {
+                                add_post_meta($id, $key, $record);
+                            }
                         }
                     } else {
                         add_post_meta($post->ID, $key, $data);
+
+                        foreach ($instance_ids as $id) {
+                            add_post_meta($id, $key, $data);
+                        }
                     }
                 }
             }
@@ -424,11 +444,11 @@ class Notifications
                 );
             }
 
-            $this->logs->debug($inserted_post_ids, $mod_base, $step);
-
             $meta_headline = get_post_meta($post_id, 'headline', true);
             $meta_icon = get_post_meta($post_id, 'icon', true);
             $meta_link = get_post_meta($post_id, 'link', true);
+
+            $this->logs->debug($inserted_post_ids, $mod_base, $step);
 
             add_post_meta($post_id, NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
 
@@ -437,6 +457,7 @@ class Notifications
                 add_post_meta($id, 'icon', $meta_icon, true);
                 add_post_meta($id, 'link', $meta_link, true);
                 add_post_meta($id, NotificationInstance::MOD_REMAINDER_KEY, $key, true);
+                add_post_meta($id, 'parent', $post_id, true);
             }
         } else if ($post->post_status === 'future') {
             // update
