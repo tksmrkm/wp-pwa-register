@@ -32,9 +32,18 @@ class Users
         register_rest_field('pwa_users', 'token', [
             'update_callback' => function($value, $object, $field_name) {
                 update_post_meta($object->ID, 'token', $value);
+
+                // 再登録時に論理削除フラグを強制削除
+                delete_post_meta($object->ID, 'deleted');
             },
             'get_callback' => function($object, $field_name) {
                 return get_post_meta($object['id'], $field_name, true);
+            }
+        ]);
+
+        register_rest_field('pwa_users', 'deleted', [
+            'get_callback' => function($object, $field_name) {
+                return get_post_meta($object['id'], 'deleted', true) ? true: false;
             }
         ]);
     }
