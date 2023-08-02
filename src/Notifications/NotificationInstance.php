@@ -136,7 +136,9 @@ class NotificationInstance
 
             $this->logs->debug([
                 'after sendMessage()',
-                microtime(true) - $start
+                microtime(true) - $start,
+                $retval,
+                $reduced_retval
             ]);
 
             $this->update($post_id, $reduced_retval);
@@ -168,8 +170,6 @@ class NotificationInstance
                 'sending messages',
                 microtime(true) - $this->start_time
             ]);
-
-            $this->logs->debug($users, $post_id, $is_dry);
 
             set_time_limit($max_execution_time);
             $retval[] = $this->curl($users, $post_id, $is_dry);
@@ -223,8 +223,6 @@ class NotificationInstance
             QUERY;
 
             $users = $wpdb->get_results($query);
-
-            $this->logs->debug(count($users), $query);
 
             if (count($users)) {
                 $retval = [
@@ -283,13 +281,19 @@ class NotificationInstance
         curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
         curl_setopt($ch, CURLOPT_URL, self::FCM_SERVER);
+
         $response = curl_exec($ch);
+
+        if (curl_errno($ch)) {
+            $this->logs->debug(curl_error($ch));
+        }
+
         curl_close($ch);
 
-        return $this->error_check($response, $ids, $dry);
+        return $this->error_check($response, $ids);
     }
 
-    private function error_check($response, $ids, $dry)
+    private function error_check($response, $ids)
     {
         $response = json_decode($response);
 
@@ -314,6 +318,8 @@ class NotificationInstance
                 }
             }
         }
+
+        $this->logs->debug($retval, $response);
 
         return $retval;
     }
