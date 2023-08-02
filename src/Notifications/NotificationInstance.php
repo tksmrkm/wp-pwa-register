@@ -295,6 +295,8 @@ class NotificationInstance
 
     private function error_check($response, $ids)
     {
+        $this->logs->debug($response);
+
         $response = json_decode($response);
 
         $retval = [
@@ -319,7 +321,7 @@ class NotificationInstance
             }
         }
 
-        $this->logs->debug($retval, $response);
+        $this->logs->debug($retval);
 
         return $retval;
     }
