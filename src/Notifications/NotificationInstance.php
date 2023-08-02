@@ -27,7 +27,7 @@ class NotificationInstance
         $this->customizer = $customizer;
 
         add_action('init', [$this, 'init']);
-        add_action('publish_pwa_notifications', [$this, 'publish']);
+        add_action('publish_' . self::POST_KEY, [$this, 'publish']);
     }
 
     public function init()
@@ -160,6 +160,8 @@ class NotificationInstance
         $mod_base = $this->customizer->get_theme_mod('split-transfer');
         $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true);
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
+
+        $this->logs->debug($post_id, $mod_base, $mod_remainder);
 
         foreach ($this->getUsers($mod_base, $mod_remainder) as $users) {
             $this->logs->debug([
