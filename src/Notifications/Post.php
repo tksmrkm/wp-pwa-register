@@ -44,6 +44,15 @@ class Post
 
             echo "{$success} / {$error} / {$deleted}";
         }
+
+        if ($column === self::PREPARE_COLUMN_KEY) {
+            $ids = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+            $ids = explode(',', $ids);
+            $count = array_filter($ids, function($id) {
+                return !get_post_meta($id, NotificationInstance::PUBLISHED_FLAG_KEY, true);
+            });
+            echo count($count);
+        }
     }
 
     public function firebaseNotificationsManageColumns($columns)

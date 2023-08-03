@@ -10,6 +10,7 @@ class NotificationInstance
     const POST_KEY = 'notificationinstance';
     const PUBLISHED_FLAG_KEY = '_published_ever';
     const MOD_REMAINDER_KEY = 'mod_remainder';
+    const PARENT_KEY = 'parent';
 
     private $logs;
     private $customizer;
@@ -28,6 +29,37 @@ class NotificationInstance
 
         add_action('init', [$this, 'init']);
         add_action('publish_' . self::POST_KEY, [$this, 'publish']);
+        add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
+        add_filter('manage_edit-' . self::POST_KEY . '_columns', [$this, 'manageColumn']);
+    }
+
+    public function addCustomColumn($column, $post_id) {
+        $arr = [
+            Post::REACH_SUCCESS_KEY,
+            Post::REACH_ERROR_KEY,
+            Post::REACH_DELETED_KEY
+        ];
+
+        foreach ($arr as $key) {
+            if ($column === $key) {
+                $value = get_post_meta($post_id, $key, true);
+                echo strlen($value) > 0 ? $value: 0;
+            }
+        }
+
+        if ($column === self::PARENT_KEY) {
+            $parent_id = get_post_meta($post_id, self::PARENT_KEY, true);
+            echo '<a href="' . get_edit_post_link($parent_id) . '">' . $parent_id . '</a>';
+        }
+    }
+
+    public function manageColumn($columns) {
+        $columns[self::PARENT_KEY] = '親ID';
+        $columns[Post::REACH_SUCCESS_KEY] = '送信';
+        $columns[Post::REACH_ERROR_KEY] = 'エラー';
+        $columns[Post::REACH_DELETED_KEY] = '削除';
+
+        return $columns;
     }
 
     public function init()
@@ -170,7 +202,7 @@ class NotificationInstance
         $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
         $mod_base = $this->customizer->get_theme_mod('split-transfer');
         $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true);
-        $parent_id = get_post_meta($post_id, 'parent', true);
+        $parent_id = get_post_meta($post_id, self::PARENT_KEY, true);
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
 
         $this->logs->debug($post_id, $parent_id, $mod_base, $mod_remainder);
