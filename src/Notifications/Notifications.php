@@ -417,12 +417,13 @@ class Notifications
 
         $this->logs->debug($processed, $post_id, $post);
 
+        $step = $this->customizer->get_theme_mod('split-tick') ?? 180;
+
         if (!$processed) {
             // セット済みフラグを保存
             add_post_meta($post_id, 'processed', true, true);
 
             $mod_base = $this->customizer->get_theme_mod('split-transfer');
-            $step = $this->customizer->get_theme_mod('split-tick') ?? 180;
 
             $model = [
                 'post_type' => NotificationInstance::POST_KEY,
@@ -459,8 +460,20 @@ class Notifications
                 add_post_meta($id, NotificationInstance::MOD_REMAINDER_KEY, $key, true);
                 add_post_meta($id, NotificationInstance::PARENT_KEY, $post_id, true);
             }
-        } else if ($post->post_status === 'future') {
+        } else {
             // update
+            if ($post->post_status === 'future') {
+                $children = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+                $children = explode(',', $children);
+
+                foreach ($children as $child) {
+                    $remainder = (int)get_post_meta($child, NotificationInstance::MOD_REMAINDER_KEY, true);
+                    $child_post = get_post($child);
+                    $diff = $remainder * $step;
+                    $child_post->post_date = date('Y-m-d H:i:s', strtotime($post->post_date) + $diff);
+                    wp_update_post($child_post);
+                }
+            }
         }
     }
 }
