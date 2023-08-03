@@ -26,7 +26,8 @@ class Post
             $ids = explode(',', $ids);
             return array_sum(
                 array_map(function($id) use ($key) {
-                    return get_post_meta($id, $key, true) ?? 0;
+                    $value = get_post_meta($id, $key, true) ?? 0;
+                    return (int)$value;
                 }, $ids)
             );
         }
