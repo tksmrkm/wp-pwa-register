@@ -26,7 +26,8 @@ class Post
             $ids = explode(',', $ids);
             return array_sum(
                 array_map(function($id) use ($key) {
-                    return get_post_meta($id, $key, true) ?? 0;
+                    $value = get_post_meta($id, $key, true) ?? 0;
+                    return (int)$value;
                 }, $ids)
             );
         }
@@ -42,6 +43,15 @@ class Post
             $deleted = $this->get_reached_number($post_id, self::REACH_DELETED_KEY);
 
             echo "{$success} / {$error} / {$deleted}";
+        }
+
+        if ($column === self::PREPARE_COLUMN_KEY) {
+            $ids = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+            $ids = explode(',', $ids);
+            $count = array_filter($ids, function($id) {
+                return !get_post_meta($id, NotificationInstance::PUBLISHED_FLAG_KEY, true);
+            });
+            echo count($count);
         }
     }
 

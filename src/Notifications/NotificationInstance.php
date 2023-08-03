@@ -10,6 +10,7 @@ class NotificationInstance
     const POST_KEY = 'notificationinstance';
     const PUBLISHED_FLAG_KEY = '_published_ever';
     const MOD_REMAINDER_KEY = 'mod_remainder';
+    const PARENT_KEY = 'parent';
 
     private $logs;
     private $customizer;
@@ -28,6 +29,37 @@ class NotificationInstance
 
         add_action('init', [$this, 'init']);
         add_action('publish_' . self::POST_KEY, [$this, 'publish']);
+        add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
+        add_filter('manage_edit-' . self::POST_KEY . '_columns', [$this, 'manageColumn']);
+    }
+
+    public function addCustomColumn($column, $post_id) {
+        $arr = [
+            Post::REACH_SUCCESS_KEY,
+            Post::REACH_ERROR_KEY,
+            Post::REACH_DELETED_KEY
+        ];
+
+        foreach ($arr as $key) {
+            if ($column === $key) {
+                $value = get_post_meta($post_id, $key, true);
+                echo strlen($value) > 0 ? $value: 0;
+            }
+        }
+
+        if ($column === self::PARENT_KEY) {
+            $parent_id = get_post_meta($post_id, self::PARENT_KEY, true);
+            echo '<a href="' . get_edit_post_link($parent_id) . '">' . $parent_id . '</a>';
+        }
+    }
+
+    public function manageColumn($columns) {
+        $columns[self::PARENT_KEY] = '親ID';
+        $columns[Post::REACH_SUCCESS_KEY] = '送信';
+        $columns[Post::REACH_ERROR_KEY] = 'エラー';
+        $columns[Post::REACH_DELETED_KEY] = '削除';
+
+        return $columns;
     }
 
     public function init()
@@ -47,13 +79,14 @@ class NotificationInstance
     private function update($post_id, $reduced_retval)
     {
         update_post_meta($post_id, self::PUBLISHED_FLAG_KEY, true);
-        update_post_meta($post_id, '_reach_success', $reduced_retval['success']);
-        update_post_meta($post_id, '_reach_error', $reduced_retval['failure']);
+        update_post_meta($post_id, Post::REACH_SUCCESS_KEY, $reduced_retval['success']);
+        update_post_meta($post_id, Post::REACH_ERROR_KEY, $reduced_retval['failure']);
 
         /**
          * Registration ID update
          */
         foreach ($reduced_retval['update_list'] as $user) {
+            $this->logs->debug('update user', $user);
             update_post_meta($user['id'], 'token', $user['registration_id']);
         }
     }
@@ -111,7 +144,17 @@ class NotificationInstance
         );
 
         $this->logs->debug($delete_result, $deleted_count);
-        update_post_meta($post_id, '_reach_deleted', $deleted_count);
+        update_post_meta($post_id, Post::REACH_DELETED_KEY, $deleted_count);
+    }
+
+    public function reducer($prev, $current)
+    {
+        return [
+            'update_list' => array_merge($prev['update_list'] ?? [], $current['update_list']),
+            'success' => ($prev['success'] ?? 0) + $current['success'],
+            'failure' => ($prev['failure'] ?? 0) + $current['failure'],
+            'delete_list' => array_merge($prev['delete_list'] ?? [], $current['delete_list']),
+        ];
     }
 
     public function publish($post_id)
@@ -126,8 +169,6 @@ class NotificationInstance
         ]);
 
         $had_ever = get_post_meta($post_id, self::PUBLISHED_FLAG_KEY, true);
-
-        $this->logs->debug($had_ever);
 
         if (!$had_ever) {
             $retval = $this->sendMessage($post_id);
@@ -161,9 +202,10 @@ class NotificationInstance
         $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
         $mod_base = $this->customizer->get_theme_mod('split-transfer');
         $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true);
+        $parent_id = get_post_meta($post_id, self::PARENT_KEY, true);
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
 
-        $this->logs->debug($post_id, $mod_base, $mod_remainder);
+        $this->logs->debug($post_id, $parent_id, $mod_base, $mod_remainder);
 
         foreach ($this->getUsers($mod_base, $mod_remainder) as $users) {
             $this->logs->debug([
@@ -172,7 +214,7 @@ class NotificationInstance
             ]);
 
             set_time_limit($max_execution_time);
-            $retval[] = $this->curl($users, $post_id, $is_dry);
+            $retval[] = $this->curl($users, $parent_id, $is_dry);
         }
 
         return $retval;
@@ -295,8 +337,6 @@ class NotificationInstance
 
     private function error_check($response, $ids)
     {
-        $this->logs->debug($response);
-
         $response = json_decode($response);
 
         $retval = [
@@ -320,8 +360,6 @@ class NotificationInstance
                 }
             }
         }
-
-        $this->logs->debug($retval);
 
         return $retval;
     }

@@ -457,7 +457,7 @@ class Notifications
                 add_post_meta($id, 'icon', $meta_icon, true);
                 add_post_meta($id, 'link', $meta_link, true);
                 add_post_meta($id, NotificationInstance::MOD_REMAINDER_KEY, $key, true);
-                add_post_meta($id, 'parent', $post_id, true);
+                add_post_meta($id, NotificationInstance::PARENT_KEY, $post_id, true);
             }
         } else if ($post->post_status === 'future') {
             // update
