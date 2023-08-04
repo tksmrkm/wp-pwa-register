@@ -255,7 +255,9 @@ class NotificationInstance
                 Deleted.meta_value IS NULL
                 AND
                 Token.meta_value IS NOT NULL
-                AND
+            GROUP BY
+                Token.meta_value
+            HAVING
                 Post.ID % {$mod_base} = {$mod_remainder}
             ORDER BY
                 Post.ID
