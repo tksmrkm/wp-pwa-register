@@ -1,5 +1,14 @@
 version: 2
 
 updates:
-    - package-ecosystem: npm
-        target-branch: develop
+    -   package-ecosystem: npm
+        directory: "/"
+        schedule:
+            interval: "weekly"
+        target-branch: "develop"
+
+    -   package-ecosystem: composer
+        directory: "/"
+        schedule:
+            interval: "weekly"
+        target-branch: "develop"
