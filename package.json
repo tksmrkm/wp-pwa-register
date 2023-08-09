@@ -16,6 +16,6 @@
     "js:watch": "webpack -w --mode development -d inline-source-map"
   },
   "dependencies": {
-    "firebase": "^9.6.10"
+    "firebase": "^10.1.0"
   }
 }
