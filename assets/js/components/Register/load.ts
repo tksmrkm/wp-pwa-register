@@ -7,6 +7,7 @@ interface ExtendedWorkerNavigator extends WorkerNavigator{
 declare const navigator: ExtendedWorkerNavigator
 
 const handleLoad = () => {
+    console.log('onLoad')
     if (navigator.serviceWorker) {
         navigator
             .serviceWorker
