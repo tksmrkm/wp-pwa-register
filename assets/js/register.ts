@@ -1,5 +1,3 @@
-import handleLoad from '~/components/Register/load';
-
-declare const window: typeof globalThis
+import handleLoad from './components/Register/load';
 
 window.addEventListener('load', handleLoad);

@@ -10,6 +10,15 @@ class Register
     {
         add_filter('query_vars', [$this, 'addVars']);
         add_action('template_redirect', [$this, 'redirect']);
+        add_action('wp_enqueue_scripts', [$this, 'scripts']);
+    }
+
+    public function scripts()
+    {
+        $basename = basename(dirname(__DIR__));
+        $style_path = '/styles/register.css';
+        $file_url = plugins_url($basename . $style_path);
+        wp_enqueue_style('wp-pwa-register-register', $file_url, [], VERSION);
     }
 
     public function addVars($vars)

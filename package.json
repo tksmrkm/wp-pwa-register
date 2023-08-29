@@ -6,6 +6,7 @@
   "author": "tksmrkm <nis.murakami@gmail.com>",
   "license": "MIT",
   "devDependencies": {
+    "node-sass": "^9.0.0",
     "ts-loader": "^9.4.4",
     "typescript": "^5.2.2",
     "webpack": "^5.88.2",
@@ -13,7 +14,9 @@
   },
   "scripts": {
     "js:build": "webpack --mode production",
-    "js:watch": "webpack -w --mode development -d inline-source-map"
+    "js:watch": "webpack -w --mode development -d inline-source-map",
+    "css:build": "node-sass --output-style compressed -o styles assets/scss",
+    "css:watch": "node-sass --watch --output-style compressed -o styles assets/scss"
   },
   "dependencies": {
     "firebase": "^10.3.1"
