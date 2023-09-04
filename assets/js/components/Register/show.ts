@@ -45,7 +45,7 @@ const getBanner = () => {
 const getMessage = () => {
     const node = document.createElement('p')
     node.setAttribute('id', 'wp-pwa-register-message')
-    node.textContent = 'hello world'
+    node.textContent = '競馬ヘッドラインの記事更新をプッシュ通知で直接お届けします。購読解除はいつでも可能です。'
     return node
 }
 
