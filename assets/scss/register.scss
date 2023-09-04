@@ -1,0 +1,94 @@
+#wp-pwa-register {
+    @keyframes fadein {
+        from {
+            opacity: 0;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fadeout {
+        from {
+            opacity: 1;
+        }
+
+        to {
+            opacity: 0;
+        }
+    }
+
+    &-wrapper {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 100000;
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        animation: .25s ease-in fadein;
+
+        &.hide {
+            animation: .25s ease-out fadeout;
+            animation-fill-mode: forwards;
+        }
+    }
+
+    &-container {
+        display: flex;
+        padding: 1em;
+        background: white;
+        border-radius: 5px;
+        box-shadow: 0 1px 6px rgba(5, 27, 44, 0.06), 0 2px 32px rgba(5, 27, 44, 0.16);
+        width: 100%;
+        max-width: 500px;
+    }
+
+    &-content {
+        display: flex;
+        gap: 1em;
+        flex-direction: column;
+    }
+
+    &-main {
+        display: flex;
+        gap: 1em;
+    }
+
+    &-banner {
+
+    }
+
+    &-message {
+
+    }
+
+    &-footer {
+        display: flex;
+        gap: 1em;
+        flex-direction: row-reverse;
+        justify-content: space-evenly;
+
+        button {
+            margin: 0;
+            border: none;
+        }
+    }
+
+    &-accept-button {
+        background: #6495ed;
+        color: #FFF;
+        padding: 1em;
+
+        &:hover {
+            background: #6e9cf1;
+        }
+    }
+
+    &-cancel-button {
+        color: #6495ed;
+        border: none;
+    }
+}
