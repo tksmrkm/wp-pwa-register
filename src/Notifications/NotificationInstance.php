@@ -9,8 +9,8 @@ class NotificationInstance
     const FCM_SERVER = 'https://fcm.googleapis.com/fcm/send';
     const POST_KEY = 'notificationinstance';
     const PUBLISHED_FLAG_KEY = '_published_ever';
-    const MOD_REMAINDER_KEY = 'mod_remainder';
-    const PARENT_KEY = 'parent';
+    const MOD_REMAINDER_KEY = '_mod_remainder';
+    const PARENT_KEY = '_parent';
 
     private $logs;
     private $customizer;
@@ -48,7 +48,8 @@ class NotificationInstance
         }
 
         if ($column === self::PARENT_KEY) {
-            $parent_id = get_post_meta($post_id, self::PARENT_KEY, true);
+            $parent_id = get_post_meta($post_id, self::PARENT_KEY, true)
+                ?: get_post_meta($post_id, 'parent', true);
             echo '<a href="' . get_edit_post_link($parent_id) . '">' . $parent_id . '</a>';
         }
     }
@@ -201,8 +202,10 @@ class NotificationInstance
         $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
         $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
         $mod_base = $this->customizer->get_theme_mod('split-transfer');
-        $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true);
-        $parent_id = get_post_meta($post_id, self::PARENT_KEY, true);
+        $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true)
+            ?: get_post_meta($post_id, 'mod_remainder', true);
+        $parent_id = get_post_meta($post_id, self::PARENT_KEY, true)
+            ?: get_post_meta($post_id, 'parent', true);
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
 
         $this->logs->debug($post_id, $parent_id, $mod_base, $mod_remainder);
