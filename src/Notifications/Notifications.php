@@ -41,10 +41,28 @@ class Notifications
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('save_post', [$this, 'postSave'], 10, 3);
         add_action('publish_pwa_notifications', [$this, 'publish']);
+        add_action('trash_' . Post::POST_SLUG, [$this, 'trashPost'], 10, 2);
 
         $pattern = "/^\/wp-json\/wp\/v2\/pwa_notifications\/.+$/";
         if (preg_match($pattern, $_SERVER['REQUEST_URI'])) {
             $this->sendHeaders();
+        }
+    }
+
+    public function trashPost($post_id, $post)
+    {
+        $this->logs->debug($post_id, $post->post_type, Post::POST_SLUG);
+
+        if ($post->post_type === Post::POST_SLUG) {
+            $ids = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
+                ?: get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+            $ids = explode(',', $ids);
+
+            $this->logs->debug($ids);
+
+            foreach ($ids as $id) {
+                wp_trash_post($id);
+            }
         }
     }
 
@@ -466,12 +484,22 @@ class Notifications
                 $children = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
                 $children = explode(',', $children);
 
+                $new_headline = get_post_meta($post_id, 'headline', true);
+                $new_icon = get_post_meta($post_id, 'icon', true);
+                $new_link = get_post_meta($post_id, 'link', true);
+
                 foreach ($children as $child) {
                     $remainder = (int)get_post_meta($child, NotificationInstance::MOD_REMAINDER_KEY, true);
                     $child_post = get_post($child);
                     $diff = $remainder * $step;
                     $child_post->post_date = date('Y-m-d H:i:s', strtotime($post->post_date) + $diff);
+                    $child_post->post_title = $post->post_title;
                     wp_update_post($child_post);
+
+                    // 更新処理
+                    update_post_meta($child, 'headline', $new_headline);
+                    update_post_meta($child, 'icon', $new_icon);
+                    update_post_meta($child, 'link', $new_link);
                 }
             }
         }
