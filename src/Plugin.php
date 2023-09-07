@@ -19,7 +19,6 @@ class Plugin
         Register::getInstance();
         ServiceWorker::getInstance($container);
         Firebase::getInstance($container);
-        Posts::getInstance();
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
