@@ -20,7 +20,8 @@ class Post
 
     private function get_reached_number($post_id, $key)
     {
-        $ids = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+        $ids = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
+            ?: get_post_meta($post_id, NotificationInstance::POST_KEY, true);
 
         if ($ids) {
             $ids = explode(',', $ids);
@@ -46,7 +47,8 @@ class Post
         }
 
         if ($column === self::PREPARE_COLUMN_KEY) {
-            $ids = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+            $ids = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
+                ?: get_post_meta($post_id, NotificationInstance::POST_KEY, true);
             $ids = explode(',', $ids);
             $count = array_filter($ids, function($id) {
                 return !get_post_meta($id, NotificationInstance::PUBLISHED_FLAG_KEY, true);

@@ -12,6 +12,7 @@ class Notifications
 
     const FCM_SERVER = 'https://fcm.googleapis.com/fcm/send';
     const META_PSEUDO_KEY = '_pseudo';
+    const PROCESSED_KEY = '_processed';
 
     private $firebase_server_key;
     private $customizer;
@@ -41,10 +42,28 @@ class Notifications
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('save_post', [$this, 'postSave'], 10, 3);
         add_action('publish_pwa_notifications', [$this, 'publish']);
+        add_action('trash_' . Post::POST_SLUG, [$this, 'trashPost'], 10, 2);
 
         $pattern = "/^\/wp-json\/wp\/v2\/pwa_notifications\/.+$/";
         if (preg_match($pattern, $_SERVER['REQUEST_URI'])) {
             $this->sendHeaders();
+        }
+    }
+
+    public function trashPost($post_id, $post)
+    {
+        $this->logs->debug($post_id, $post->post_type, Post::POST_SLUG);
+
+        if ($post->post_type === Post::POST_SLUG) {
+            $ids = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
+                ?: get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+            $ids = explode(',', $ids);
+
+            $this->logs->debug($ids);
+
+            foreach ($ids as $id) {
+                wp_trash_post($id);
+            }
         }
     }
 
@@ -351,8 +370,12 @@ class Notifications
                     return;
                 }
 
-                // generate instance_ids
-                $meta_keys = get_post_meta($post->ID, NotificationInstance::POST_KEY, true);
+                /**
+                 * generate instance_ids
+                 * @deprecated 2023/10/01 ?:以降
+                 */
+                $meta_keys = get_post_meta($post->ID, '_' . NotificationInstance::POST_KEY, true)
+                    ?: get_post_meta($post->ID, NotificationInstance::POST_KEY, true);
                 $instances = explode(',', $meta_keys);
                 $filtered = array_filter($instances, function($id) {
                     return strlen($id) > 0;
@@ -398,7 +421,6 @@ class Notifications
     public function postSave($post_id, WP_Post $post, $updated)
     {
         if ($post->post_type !== Post::POST_SLUG) {
-            $this->logs->debug(Post::POST_SLUG);
             return true;
         }
 
@@ -408,20 +430,22 @@ class Notifications
             $post->post_status !== 'publish'
             && $post->post_status !== 'future'
         ) {
-            $this->logs->debug($post->post_status);
             return true;
         }
 
         // セット済みフラグを取得
-        $processed = get_post_meta($post_id, 'processed', true);
-
+        /**
+         * @deprecated 2023/10/01 ?:以降
+         */
+        $processed = get_post_meta($post_id, self::PROCESSED_KEY, true)
+            ?: get_post_meta($post_id, 'processed', true);
         $this->logs->debug($processed, $post_id, $post);
 
         $step = $this->customizer->get_theme_mod('split-tick') ?? 180;
 
         if (!$processed) {
             // セット済みフラグを保存
-            add_post_meta($post_id, 'processed', true, true);
+            add_post_meta($post_id, self::PROCESSED_KEY, true, true);
 
             $mod_base = $this->customizer->get_theme_mod('split-transfer');
 
@@ -451,27 +475,42 @@ class Notifications
 
             $this->logs->debug($inserted_post_ids, $mod_base, $step);
 
-            add_post_meta($post_id, NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
+            add_post_meta($post_id, '_' . NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
 
             foreach ($inserted_post_ids as $key => $id) {
                 add_post_meta($id, 'headline', $meta_headline, true);
                 add_post_meta($id, 'icon', $meta_icon, true);
                 add_post_meta($id, 'link', $meta_link, true);
-                add_post_meta($id, NotificationInstance::MOD_REMAINDER_KEY, $key, true);
+                add_post_meta($id, NotificationInstance::MOD_REMAINDER_KEY, (string)$key, true);
                 add_post_meta($id, NotificationInstance::PARENT_KEY, $post_id, true);
             }
         } else {
             // update
             if ($post->post_status === 'future') {
-                $children = get_post_meta($post_id, NotificationInstance::POST_KEY, true);
+                /**
+                 * @deprecated 2023/10/01 ?:以降
+                 */
+                $children = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
+                    ?: get_post_meta($post_id, NotificationInstance::POST_KEY, true);
                 $children = explode(',', $children);
 
+                $new_headline = get_post_meta($post_id, 'headline', true);
+                $new_icon = get_post_meta($post_id, 'icon', true);
+                $new_link = get_post_meta($post_id, 'link', true);
+
                 foreach ($children as $child) {
-                    $remainder = (int)get_post_meta($child, NotificationInstance::MOD_REMAINDER_KEY, true);
+                    $remainder = (int)(get_post_meta($child, NotificationInstance::MOD_REMAINDER_KEY, true)
+                        ?: get_post_meta($child, 'mod_remainder', true));
                     $child_post = get_post($child);
                     $diff = $remainder * $step;
                     $child_post->post_date = date('Y-m-d H:i:s', strtotime($post->post_date) + $diff);
+                    $child_post->post_title = $post->post_title;
                     wp_update_post($child_post);
+
+                    // 更新処理
+                    update_post_meta($child, 'headline', $new_headline);
+                    update_post_meta($child, 'icon', $new_icon);
+                    update_post_meta($child, 'link', $new_link);
                 }
             }
         }
