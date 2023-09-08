@@ -1,7 +1,6 @@
-import { isSupported } from 'firebase/messaging';
 import handleCancel, { canceledId } from './cancel';
 import handleCloseModal from './closeModal';
-import handleLoad from './load';
+import handleRequest from './request';
 
 export const wrapperId = 'wp-pwa-register-wrapper'
 
@@ -53,7 +52,7 @@ const getAcceptButton = () => {
     const node = document.createElement('button')
     node.setAttribute('id', 'wp-pwa-register-accept-button')
     node.textContent = '通知を受け取る'
-    node.addEventListener('click', handleLoad)
+    node.addEventListener('click', handleRequest)
     node.addEventListener('click', handleCloseModal)
     return node
 }
@@ -67,18 +66,7 @@ const getCancelButton = () => {
     return node
 }
 
-const handleShow = async () => {
-    const supported = await isSupported()
-
-    if (!supported) {
-        return false;
-    }
-
-    // Notificationのパーミッション取得済みの場合、早期リターン
-    if (Notification.permission !== 'default') {
-        return false
-    }
-
+const handleShow = () => {
     // 通知バナーで受け取らないをクリックした日時
     const canceled = localStorage.getItem(canceledId)
 

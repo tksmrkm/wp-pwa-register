@@ -1,3 +1,3 @@
-import handleShow from './components/Register/show';
+import handleLoad from './components/Register/load';
 
-window.addEventListener('load', handleShow);
+window.addEventListener('load', handleLoad);
