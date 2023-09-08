@@ -22,6 +22,8 @@ class NotificationInstance
         'meta' => []
     ];
 
+    use TraitChoose;
+
     public function __construct($logs, $customizer)
     {
         $this->logs = $logs;
@@ -48,8 +50,7 @@ class NotificationInstance
         }
 
         if ($column === self::PARENT_KEY) {
-            $parent_id = get_post_meta($post_id, self::PARENT_KEY, true)
-                ?: get_post_meta($post_id, 'parent', true);
+            $parent_id = $this->choose(get_post_meta($post_id, self::PARENT_KEY, true), get_post_meta($post_id, 'parent', true));
             echo '<a href="' . get_edit_post_link($parent_id) . '">' . $parent_id . '</a>';
         }
     }
@@ -202,10 +203,8 @@ class NotificationInstance
         $max_execution_time = (int)ini_get('max_execution_time') ?? 30;
         $is_dry = $this->customizer->get_theme_mod('enable-dry-mode');
         $mod_base = $this->customizer->get_theme_mod('split-transfer');
-        $mod_remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true)
-            ?: get_post_meta($post_id, 'mod_remainder', true);
-        $parent_id = get_post_meta($post_id, self::PARENT_KEY, true)
-            ?: get_post_meta($post_id, 'parent', true);
+        $mod_remainder = $this->choose(get_post_meta($post_id, self::MOD_REMAINDER_KEY, true), get_post_meta($post_id, 'mod_remainder', true));
+        $parent_id = $this->choose(get_post_meta($post_id, self::PARENT_KEY, true), get_post_meta($post_id, 'parent', true));
         $this->firebase_server_key = $this->customizer->get_theme_mod('server-key');
 
         $this->logs->debug($post_id, $parent_id, $mod_base, $mod_remainder);
