@@ -160,7 +160,12 @@ class Plugin
             'webroot' => get_home_url(),
             'root' => esc_url_raw(rest_url()),
             'base64' => base64_encode(self::USERNAME . ':' . $this->customizer->get_theme_mod('application-password')),
-            'debug' => $this->customizer->get_theme_mod('debug', false)
+            'debug' => $this->customizer->get_theme_mod('debug', false),
+            'register' => [
+                'useDialog' => $this->customizer->get_theme_mod('using-register-dialog', false),
+                'icon' => $this->customizer->get_theme_mod('register-icon', false),
+                'message' => $this->customizer->get_theme_mod('register-message', false)
+            ]
         ]);
 
         wp_localize_script('pwa-register', 'WP_PWA_REGISTER_FIREBASE_CONFIG', [

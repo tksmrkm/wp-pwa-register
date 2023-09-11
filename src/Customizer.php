@@ -88,11 +88,37 @@ class Customizer
                 'type' => 'checkbox'
             ]
         ],
+        'using-register-dialog' => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'section' => 'register',
+                'label' => '登録ダイアログを表示する',
+                'description' => 'サービスワーカー登録リクエストをユーザーアクション起点へ変更するための登録ダイアログを表示する。',
+                'type' => 'checkbox'
+            ]
+        ],
         'application-password' => [
             'control_option' => [
                 'section' => 'register',
                 'label' => 'Application Passwords',
                 'description' => 'Application Passwordsで発行されたパスワード'
+            ]
+        ],
+        'register-icon' => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'アイコン画像',
+                'description' => '登録ダイアログに表示されるアイコン'
+            ],
+            'control_class' => 'WP_Customize_Image_Control'
+        ],
+        'register-message' => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'メッセージ',
+                'description' => '登録ダイアログに表示されるメッセージ'
             ]
         ],
         'app-id' => [
