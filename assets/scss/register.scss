@@ -16,16 +16,18 @@
 
         to {
             opacity: 0;
+            display: none;
         }
     }
 
     &-wrapper {
         position: fixed;
         top: 0;
-        left: 0;
+        left: 50%;
         z-index: 100000;
         display: flex;
-        width: 100%;
+        width: fit-content;
+        transform: translate(-50%, 0);
         justify-content: center;
         align-items: center;
         animation: .25s ease-in fadein;
