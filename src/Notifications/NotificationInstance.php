@@ -2,7 +2,7 @@
 
 namespace WpPwaRegister\Notifications;
 
-use WP_Post;
+use WpPwaRegister\Logs;
 
 class NotificationInstance
 {
@@ -12,7 +12,7 @@ class NotificationInstance
     const MOD_REMAINDER_KEY = '_mod_remainder';
     const PARENT_KEY = '_parent';
 
-    private $logs;
+    private Logs $logs;
     private $customizer;
     private $firebase_server_key;
     private $delete_flag = true;
@@ -53,6 +53,12 @@ class NotificationInstance
             $parent_id = $this->choose(get_post_meta($post_id, self::PARENT_KEY, true), get_post_meta($post_id, 'parent', true));
             echo '<a href="' . get_edit_post_link($parent_id) . '">' . $parent_id . '</a>';
         }
+
+        if ($column === 'remainder') {
+            $remainder = get_post_meta($post_id, self::MOD_REMAINDER_KEY, true);
+            $base = $this->customizer->get_theme_mod('split-transfer');
+            echo $remainder, ' / ', $base;
+        }
     }
 
     public function manageColumn($columns) {
@@ -60,6 +66,7 @@ class NotificationInstance
         $columns[Post::REACH_SUCCESS_KEY] = '送信';
         $columns[Post::REACH_ERROR_KEY] = 'エラー';
         $columns[Post::REACH_DELETED_KEY] = '削除';
+        $columns['remainder'] = '分割';
 
         return $columns;
     }
