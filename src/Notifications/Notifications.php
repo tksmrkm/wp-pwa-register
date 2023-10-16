@@ -3,6 +3,7 @@
 namespace WpPwaRegister\Notifications;
 
 use WP_Post;
+use WpPwaRegister\Logs;
 use WpPwaRegister\traits\Singleton;
 use WpPwaRegister\Notifications\Post;
 
@@ -16,7 +17,7 @@ class Notifications
 
     private $firebase_server_key;
     private $customizer;
-    private $logs;
+    private Logs $logs;
     private $delete_flag = true;
     private $deletion_limit = 0;
     private $split_transfer = 1;

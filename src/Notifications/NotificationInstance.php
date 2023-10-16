@@ -2,7 +2,7 @@
 
 namespace WpPwaRegister\Notifications;
 
-use WP_Post;
+use WpPwaRegister\Logs;
 
 class NotificationInstance
 {
@@ -12,7 +12,7 @@ class NotificationInstance
     const MOD_REMAINDER_KEY = '_mod_remainder';
     const PARENT_KEY = '_parent';
 
-    private $logs;
+    private Logs $logs;
     private $customizer;
     private $firebase_server_key;
     private $delete_flag = true;
