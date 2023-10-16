@@ -29,8 +29,6 @@ class Notifications
     ];
     private $start_time;
 
-    use TraitChoose;
-
     public function init($container)
     {
         $this->customizer = $container['customizer'];
@@ -58,8 +56,7 @@ class Notifications
         $this->logs->debug($post_id, $post->post_type, Post::POST_SLUG);
 
         if ($post->post_type === Post::POST_SLUG) {
-            $ids = $this->choose(get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
-                , get_post_meta($post_id, NotificationInstance::POST_KEY, true));
+            $ids = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true);
             $ids = explode(',', $ids);
 
             $this->logs->debug($ids);
@@ -373,12 +370,7 @@ class Notifications
                     return;
                 }
 
-                /**
-                 * generate instance_ids
-                 * @deprecated 2023/10/01 ?:以降
-                 */
-                $meta_keys = $this->choose(get_post_meta($post->ID, '_' . NotificationInstance::POST_KEY, true)
-                    , get_post_meta($post->ID, NotificationInstance::POST_KEY, true));
+                $meta_keys = get_post_meta($post->ID, '_' . NotificationInstance::POST_KEY, true);
                 $instances = explode(',', $meta_keys);
                 $filtered = array_filter($instances, function($id) {
                     return strlen($id) > 0;
@@ -437,11 +429,7 @@ class Notifications
         }
 
         // セット済みフラグを取得
-        /**
-         * @deprecated 2023/10/01 ?:以降
-         */
-        $processed = $this->choose(get_post_meta($post_id, self::PROCESSED_KEY, true)
-            , get_post_meta($post_id, 'processed', true));
+        $processed = get_post_meta($post_id, self::PROCESSED_KEY, true);
         $this->logs->debug($processed, $post_id, $post);
 
         $step = $this->customizer->get_theme_mod('split-tick') ?? 180;
@@ -490,11 +478,7 @@ class Notifications
         } else {
             // update
             if ($post->post_status === 'future') {
-                /**
-                 * @deprecated 2023/10/01 ?:以降
-                 */
-                $children = $this->choose(get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true)
-                    , get_post_meta($post_id, NotificationInstance::POST_KEY, true));
+                $children = get_post_meta($post_id, '_' . NotificationInstance::POST_KEY, true);
                 $children = explode(',', $children);
 
                 $new_headline = get_post_meta($post_id, 'headline', true);
@@ -502,8 +486,7 @@ class Notifications
                 $new_link = get_post_meta($post_id, 'link', true);
 
                 foreach ($children as $child) {
-                    $remainder = (int)$this->choose(get_post_meta($child, NotificationInstance::MOD_REMAINDER_KEY, true)
-                        , get_post_meta($child, 'mod_remainder', true));
+                    $remainder = (int)get_post_meta($child, NotificationInstance::MOD_REMAINDER_KEY, true);
                     $child_post = get_post($child);
                     $diff = $remainder * $step;
                     $child_post->post_date = date('Y-m-d H:i:s', strtotime($post->post_date) + $diff);
