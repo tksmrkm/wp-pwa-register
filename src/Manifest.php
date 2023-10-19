@@ -21,7 +21,7 @@ class Manifest
     {
         add_rewrite_rule('^pwa-manifest.json/?$', 'index.php?' . self::QUERY_ROUTE_KEY . '=1', 'top');
     }
-    
+
     public function addVar($vars)
     {
         $vars[] = self::QUERY_ROUTE_KEY;

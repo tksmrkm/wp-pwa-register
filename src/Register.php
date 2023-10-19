@@ -17,7 +17,7 @@ class Register
         add_action('parse_request', [$this, 'parseRequest']);
         add_action('wp_enqueue_scripts', [$this, 'scripts']);
     }
-    
+
     public function scripts()
     {
         $basename = basename(dirname(__DIR__));
