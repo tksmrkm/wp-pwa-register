@@ -5,6 +5,7 @@ namespace WpPwaRegister;
 class Plugin
 {
     const USERNAME = 'wp-pwa-register';
+    const OPTION_NAME = 'wp-pwa-register_admin-user-id';
 
     private $valid = null;
     private $customizer;
@@ -203,28 +204,27 @@ class Plugin
         $filename = ROOT . DS . 'userid';
         if (file_exists($filename)) {
             $userId = file_get_contents($filename);
-            wp_delete_user($userId);
             unlink($filename);
             remove_role(self::USERNAME);
         }
+        $userId = get_option(self::OPTION_NAME);
+        wp_delete_user($userId);
+        delete_option(self::OPTION_NAME);
     }
 
     private function createUser()
     {
-        $username = self::USERNAME;
-        add_role($username, __('PWA Users 管理'), [
+        add_role(self::USERNAME, __('PWA Users 管理'), [
             'read' => true,
             'manage_pwa_users' => true
         ]);
         $password = wp_generate_password(12, true, true);
-        $userId = wp_create_user($username, $password, 'pseudo@example.com');
+        $userId = wp_create_user(self::USERNAME, $password, 'pseudo@example.com');
+        add_option(self::OPTION_NAME, $userId);
         wp_update_user([
             'ID' => $userId,
-            'role' => $username
+            'role' => self::USERNAME
         ]);
-        $fp = fopen(ROOT . DS . 'userid', 'w');
-        fwrite($fp, $userId);
-        fclose($fp);
     }
 
     public function rewrite_rules()
