@@ -26,7 +26,8 @@ class Plugin
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
-        Users::getInstance();
+        new Users\Post();
+        new Users\Rest($container['customizer']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
 
@@ -169,7 +170,7 @@ class Plugin
                 'icon' => $this->customizer->get_theme_mod('register-icon', false),
                 'message' => $this->customizer->get_theme_mod('register-message', false)
             ],
-            'nonce' => wp_create_nonce(Users::MANAGE_USER_ACTION)
+            'nonce' => wp_create_nonce(Users\Rest::MANAGE_USER_ACTION)
         ]);
 
         wp_localize_script('pwa-register', 'WP_PWA_REGISTER_FIREBASE_CONFIG', [

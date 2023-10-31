@@ -292,7 +292,29 @@ class Customizer
             'option' => [
                 'default' => 180
             ]
-        ]
+        ],
+        Users\Rest::CUSTOMIZER_USE_BACKEND_SERVICE => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'ユーザー登録をバックエンドに投げる',
+                'type' => 'checkbox'
+            ],
+            'option' => [
+                'default' => false
+            ]
+        ],
+        Users\Rest::CUSTOMIZER_BACKEND_REGISTER_ENDPOINT => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'バックエンドサービスのエンドポイント',
+            ]
+        ],
+        Users\Rest::CUSTOMIZER_BACKEND_ADMIN_PASSWORD => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'バックエンドの実行ユーザーのアプリケーションパスワード',
+            ]
+        ],
     ];
 
     public function init()
