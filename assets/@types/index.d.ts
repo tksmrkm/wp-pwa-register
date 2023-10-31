@@ -7,5 +7,6 @@ declare const WP_REGISTER_SERVICE_WORKER: {
         useDialog: boolean;
         icon?: string;
         message?: string;
-    }
+    };
+    nonce: string;
 }

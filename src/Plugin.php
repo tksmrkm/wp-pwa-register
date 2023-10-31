@@ -168,7 +168,8 @@ class Plugin
                 'useDialog' => $this->customizer->get_theme_mod('using-register-dialog', false),
                 'icon' => $this->customizer->get_theme_mod('register-icon', false),
                 'message' => $this->customizer->get_theme_mod('register-message', false)
-            ]
+            ],
+            'nonce' => wp_create_nonce(Users::MANAGE_USER_ACTION)
         ]);
 
         wp_localize_script('pwa-register', 'WP_PWA_REGISTER_FIREBASE_CONFIG', [

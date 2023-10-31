@@ -3,12 +3,15 @@
 namespace WpPwaRegister;
 
 use WP_Error;
+use WP_Query;
+use WP_REST_Request;
 
 class Users
 {
     const MANAGE_CAP = 'manage_pwa_users';
     const POST_SLUG = 'pwa_users';
     const MANAGE_CREATED_COLUMN_KEY = 'created_date';
+    const MANAGE_USER_ACTION = 'wp-pwa-register_manage-user';
 
     use traits\Singleton;
     
@@ -16,9 +19,76 @@ class Users
     {
         add_action('init', [$this, 'register']);
         add_action('rest_api_init', [$this, 'restApiInit']);
+        add_action('rest_api_init', [$this, 'manageUser']);
         add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
         add_filter('manage_edit-' . self::POST_SLUG . '_columns', [$this, 'manageColumns']);
         add_filter("manage_edit-" . self::POST_SLUG . "_sortable_columns", [$this, 'sortableColumns']);
+    }
+
+    public function manageUser()
+    {
+        register_rest_route( 'wp_pwa_register/v1', 'register', [
+            'methods' => ['POST'],
+            'callback' => [$this, 'manageUserEndpoint'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'token' => [
+                    'default' => null
+                ],
+                'uid' => [
+                    'default' => null
+                ],
+                'nonce' => [
+                    'default' => null
+                ]
+            ]
+        ]);
+    }
+
+    public function manageUserEndpoint(WP_REST_Request $request)
+    {
+        if (wp_verify_nonce($request['nonce'], self::MANAGE_USER_ACTION)) {
+            // find user by firebase uid
+            $user_exists = new WP_Query([
+                'post_type' => self::POST_SLUG,
+                'post_title' => $request['uid']
+            ]);
+
+            $insert_post = [
+                'meta_input' => [
+                    'token' => $request['token']
+                ]
+            ];
+
+            if (count($user_exists->posts) > 0) {
+                // get meta value
+                $token = get_post_meta($user_exists->posts[0]->ID, 'token', true);
+
+                if ($token === $request['token']) {
+                    $deleted = get_post_meta($user_exists->posts[0]->ID, 'deleted', true);
+
+                    if (!$deleted) {
+                        // do nothing
+
+                        return [
+                            'msg' => 'already registered'
+                        ];
+                    }
+                }
+
+                $insert_post['ID'] = $user_exists->posts[0]->ID;
+            }
+
+            $result = wp_insert_post($insert_post);
+
+            return [
+                'msg' => $result
+            ];
+        }
+
+        return [
+            'msg' => 'nonce failed'
+        ];
     }
 
     public function register()
