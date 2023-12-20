@@ -8,6 +8,9 @@ class Plugin
 
     private $valid = null;
     private $customizer;
+    private Register $register;
+    private ServiceWorker $sw;
+    private Manifest $manifest;
 
     private function prepare()
     {
@@ -15,9 +18,9 @@ class Plugin
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
         Api::getInstance($container);
-        Manifest::getInstance($container);
-        Register::getInstance();
-        ServiceWorker::getInstance($container);
+        $this->manifest = new Manifest($container['customizer']);
+        $this->register = new Register([$this, 'callable_valid']);
+        $this->sw = new ServiceWorker($container['customizer']);
         Firebase::getInstance($container);
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
@@ -35,7 +38,6 @@ class Plugin
 
         register_deactivation_hook($file, [$this, 'deactivate']);
         register_activation_hook($file, [$this, 'activate']);
-        add_action('init', [$this, 'rewrite_rules']);
         add_filter('redirect_canonical', [$this, 'canonical'], 10, 2);
         add_action('wp_enqueue_scripts', [$this, 'enqueueScripts']);
         add_action('wp_head', [$this, 'wpHead']);
@@ -124,6 +126,11 @@ class Plugin
         return apply_filters( 'wp-pwa-register-valid-status', $this->valid );
     }
 
+    public function callable_valid()
+    {
+        return $this->valid();
+    }
+
     private function enableToRestrictOnIp()
     {
         $flag = $this->customizer->get_theme_mod('enable-to-restrict-on-ip', false);
@@ -151,11 +158,6 @@ class Plugin
 
     public function enqueueScripts()
     {
-        if ($this->valid()) {
-            // wp_enqueue_script('pwa-firebase', 'https://www.gstatic.com/firebasejs/4.1.3/firebase.js', [], null, true);
-            wp_enqueue_script('pwa-register', home_url('/pwa-register.js'), [], VERSION, true);
-        }
-
         wp_localize_script('pwa-register', 'WP_REGISTER_SERVICE_WORKER', [
             'webroot' => get_home_url(),
             'root' => esc_url_raw(rest_url()),
@@ -226,9 +228,9 @@ class Plugin
 
     public function rewrite_rules()
     {
-        add_rewrite_rule('^pwa-register.js$', 'index.php?register=1', 'top');
-        add_rewrite_rule('^pwa-service-worker.js$', 'index.php?service-worker=1', 'top');
-        add_rewrite_rule('^pwa-manifest.json/?$', 'index.php?manifest=1', 'top');
+        $this->register->registerRoute();
+        $this->sw->registerRoute();
+        $this->manifest->registerRoute();
     }
 
     public function canonical($redirect, $request)
