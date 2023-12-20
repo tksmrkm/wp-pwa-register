@@ -2,6 +2,7 @@
 
 namespace WpPwaRegister;
 
+use Monolog\ErrorHandler;
 use Monolog\Logger;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Formatter\LineFormatter;
@@ -15,6 +16,7 @@ class Logs
     public function init()
     {
         $monolog = new Logger('Log');
+        $exception = new Logger('Exception');
         $handler = new RotatingFileHandler(ROOT . DS . 'logs' . DS . 'debug.log', 7);
         $log_format = "%datetime% > %context.file%::%context.line% %extra%\n%level_name% > %message%\n\n";
         $formatter = new LineFormatter($log_format, 'Y-m-d H:i:s', true, true);
@@ -22,6 +24,13 @@ class Logs
         $monolog->pushHandler($handler);
         $this->monolog = $monolog;
         $this->log_dir = ROOT . DS . 'logs';
+
+        $exception->pushHandler(
+            (new RotatingFileHandler(ROOT . DS . 'logs' . DS . 'exception.log', 7))
+            ->setFormatter($formatter)
+        );
+
+        ErrorHandler::register($exception);
     }
 
     public function debug()
