@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 deletion_list=()
 
@@ -15,5 +15,5 @@ for id in $@; do
     done
 done
 
-wp post delete $deletion_list --force
-# echo $deletion_list
+wp post delete ${deletion_list[@]} --force
+# echo ${deletion_list[@]}
