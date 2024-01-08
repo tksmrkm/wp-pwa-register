@@ -195,7 +195,7 @@ class Notifications
             $meta_icon = get_post_meta($post_id, 'icon', true);
             $meta_link = get_post_meta($post_id, 'link', true);
 
-            $this->logs->debug($inserted_post_ids, $mod_base, $step);
+            $this->logs->debug($inserted_post_ids, $mod_base, $step, [$post_id, '_' . NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true]);
 
             add_post_meta($post_id, '_' . NotificationInstance::POST_KEY, implode(',', $inserted_post_ids), true);
 

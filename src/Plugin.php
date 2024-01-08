@@ -25,6 +25,7 @@ class Plugin
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
+        new Notifications\Option();
         Users::getInstance();
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);

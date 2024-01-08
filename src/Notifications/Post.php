@@ -10,6 +10,7 @@ class Post
     const REACH_SUCCESS_KEY = '_reach_success';
     const REACH_ERROR_KEY = '_reach_error';
     const REACH_DELETED_KEY = '_reach_deleted';
+    const DELETION_COLUMN_KEY = '_deletion_column';
 
     public function __construct()
     {
@@ -55,12 +56,23 @@ class Post
             });
             echo count($count);
         }
+
+        if ($column === self::DELETION_COLUMN_KEY) {
+            echo '<a href="',
+                menu_page_url(Option::MENU_KEY, false),
+                '&post_id=',
+                $post_id,
+                '" onClick="return confirm(\'削除を実行する？\')">delete: ',
+                $post_id,
+                '</a>';
+        }
     }
 
     public function firebaseNotificationsManageColumns($columns)
     {
         $columns[self::RESULT_COLUMN_KEY] = '送信 / エラー / 削除';
         $columns[self::PREPARE_COLUMN_KEY] = '送信待ち';
+        $columns[self::DELETION_COLUMN_KEY] = '削除';
 
         return $columns;
     }
