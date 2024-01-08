@@ -15,5 +15,5 @@ for id in $@; do
     done
 done
 
-wp post delete ${deletion_list[@]} --force
+$PHP_PATH $WP_CLI post delete ${deletion_list[@]} --force
 # echo ${deletion_list[@]}
