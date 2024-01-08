@@ -2,9 +2,13 @@
 
 deletion_list=()
 
+. $(dirname $0)/.env
+
+cd ../../../
+
 for id in $@; do
     deletion_list+=($id)
-    retval=$(wp post meta get $id _notificationinstance)
+    retval=$($PHP_PATH $WP_CLI post meta get $id _notificationinstance)
     arr=$(echo $retval | sed "s/,/ /g")
     for iid in $arr; do
         deletion_list+=($iid)

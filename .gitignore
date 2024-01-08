@@ -4,3 +4,4 @@ userid
 .devcontainer.json
 
 /vendor/
+.env
