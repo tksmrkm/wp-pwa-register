@@ -12,6 +12,7 @@ class Plugin
     private Register $register;
     private ServiceWorker $sw;
     private Manifest $manifest;
+    private Users $users;
 
     private function prepare()
     {
@@ -22,12 +23,13 @@ class Plugin
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
         $this->sw = new ServiceWorker($container['customizer']);
+        $this->users = new Users($container['customizer']);
+
         Firebase::getInstance($container);
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
         new Notifications\Option();
-        Users::getInstance();
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
 
@@ -233,6 +235,7 @@ class Plugin
         $this->register->registerRoute();
         $this->sw->registerRoute();
         $this->manifest->registerRoute();
+        $this->users->registerRoute();
     }
 
     public function canonical($redirect, $request)
