@@ -205,11 +205,12 @@ class Plugin
         if (file_exists($filename)) {
             $userId = file_get_contents($filename);
             unlink($filename);
-            remove_role(self::USERNAME);
+        } else {
+            $userId = get_option(self::OPTION_NAME);
+            delete_option(self::OPTION_NAME);
         }
-        $userId = get_option(self::OPTION_NAME);
+        remove_role(self::USERNAME);
         wp_delete_user($userId);
-        delete_option(self::OPTION_NAME);
     }
 
     private function createUser()
