@@ -3,26 +3,127 @@
 namespace WpPwaRegister;
 
 use WP_Error;
+use WP_Query;
 
 class Users
 {
     const MANAGE_CAP = 'manage_pwa_users';
     const POST_SLUG = 'pwa_users';
     const MANAGE_CREATED_COLUMN_KEY = 'created_date';
+    const QUERY_ROUTE_KEY_FOR_SUBSCRIBE = 'pwa-register-subscribe';
+    const META_API_VERSION_KEY = '_api_version';
+    const FCM_SERVER = 'https://iid.googleapis.com/iid/v1:batchAdd';
 
-    use traits\Singleton;
-    
-    public function init()
+    private $firebase_server_key;
+
+    public function __construct(Customizer $customizer)
     {
+        $this->firebase_server_key = $customizer->get_theme_mod('server-key');
+
         add_action('init', [$this, 'register']);
+        add_filter('query_vars', [$this, 'addVars']);
+        add_action('parse_request', [$this, 'parseRequest']);
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
         add_filter('manage_edit-' . self::POST_SLUG . '_columns', [$this, 'manageColumns']);
         add_filter("manage_edit-" . self::POST_SLUG . "_sortable_columns", [$this, 'sortableColumns']);
     }
 
+    public function registerRoute()
+    {
+        add_rewrite_rule('^pwa-subscribe$', 'index.php?' . self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE . '=1', 'top');
+    }
+
+    public function addVars($vars)
+    {
+        $vars[] = self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE;
+        return $vars;
+    }
+
+    public function parseRequest($wp)
+    {
+        if (isset($wp->query_vars[self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE])) {
+            if ($wp->query_vars[self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE] === '1') {
+                $this->subscribe();
+                exit;
+            }
+        }
+    }
+
+    private function subscribe()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            var_dump('THIS IS GET');
+            return false;
+        }
+        $headers = [
+            'Authorization: key=' . $this->firebase_server_key,
+            'Content-Type: application/json'
+        ];
+
+        $data = [
+            'to' => '/topics/all',
+            'registration_tokens' => [$_POST['token']],
+            'priority' => 'high'
+        ];
+
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+        curl_setopt($ch, CURLOPT_URL, self::FCM_SERVER);
+        $response = curl_exec($ch);
+
+        $error = curl_error($ch);
+        $errno = curl_errno($ch);
+
+        curl_close($ch);
+
+        // wp create post
+        $user = $this->manageUser($_POST['uid'], $_POST['token']);
+
+        header('Content-Type: application/json');
+        echo json_encode([
+            'result' => $response,
+            'curl' => [
+                'error' => $error,
+                'errno' => $errno
+            ],
+            'user' => $user
+        ]);
+
+        exit;
+    }
+
+    private function manageUser($uid, $token)
+    {
+        $query = new WP_Query(['title' => $uid]);
+
+        if ($query->have_posts()) {
+            $status = 'updated';
+            $id = $query->post->ID;
+        } else {
+            $status = 'generated';
+            $id = wp_insert_post([
+                'post_title' => $uid,
+                'post_type' => self::POST_SLUG
+            ]);
+        }
+
+        update_post_meta($id, 'token', $token);
+        update_post_meta($id, self::META_API_VERSION_KEY, 'v2');
+
+        return [
+            'status' => $status,
+            'id' => $id
+        ];
+    }
+
     public function register()
     {
+        $this->registerRoute();
+
         $admin = get_role('administrator');
         $admin->add_cap(self::MANAGE_CAP);
 
