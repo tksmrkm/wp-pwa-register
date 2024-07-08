@@ -151,6 +151,13 @@ class Customizer
                 'label' => 'Server Key'
             ]
         ],
+        'certs-path' => [
+            'control_option' => [
+                'section' => 'firebase',
+                'label' => 'Certs JSON PATH. ex) /var/www/html/certs.json',
+                'description' => '** NOTICE ** put JSON file on private directory.'
+            ]
+        ],
         'name' => [
             'control_option' => [
                 'section' => 'manifest',
