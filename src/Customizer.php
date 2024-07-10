@@ -154,8 +154,8 @@ class Customizer
         'certs-path' => [
             'control_option' => [
                 'section' => 'firebase',
-                'label' => 'Certs JSON PATH. ex) /var/www/html/certs.json',
-                'description' => '** NOTICE ** put JSON file on private directory.'
+                'label' => 'Certs JSON PATH',
+                'description' => '** NOTICE ** put JSON file on private directory.<br>ex) /var/www/html/certs.json'
             ]
         ],
         'name' => [
