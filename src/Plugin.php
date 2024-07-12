@@ -2,6 +2,8 @@
 
 namespace WpPwaRegister;
 
+use WpPwaRegister\Notifications\Subscribe;
+
 class Plugin
 {
     const USERNAME = 'wp-pwa-register';
@@ -19,17 +21,18 @@ class Plugin
         $container = [];
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
+        $container['subscribe'] = new Subscribe($container['customizer']);
         Api::getInstance($container);
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
         $this->sw = new ServiceWorker($container['customizer']);
-        $this->users = new Users($container['customizer']);
+        $this->users = new Users($container['customizer'], $container['subscribe']);
 
         Firebase::getInstance($container['customizer']);
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
-        new Notifications\Option();
+        new Notifications\Option($container['subscribe'], $container['logs']);
         new Notifications\NotificationHttpV1($container['logs'], $container['customizer']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);

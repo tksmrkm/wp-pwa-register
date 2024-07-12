@@ -5,6 +5,7 @@ namespace WpPwaRegister;
 use WP_Error;
 use WP_Query;
 use WpPwaRegister\Notifications\NotificationHttpV1;
+use WpPwaRegister\Notifications\Subscribe;
 
 class Users
 {
@@ -14,12 +15,13 @@ class Users
     const QUERY_ROUTE_KEY_FOR_SUBSCRIBE = 'pwa-register-subscribe';
     const META_API_VERSION_KEY = '_api_version';
     const FCM_SERVER = 'https://iid.googleapis.com/iid/v1:batchAdd';
+    const FCM_BATCH_MAX_COUNT = 1000;
 
-    private $firebase_server_key;
+    private Subscribe $subscribe;
 
-    public function __construct(Customizer $customizer)
+    public function __construct(Customizer $customizer, Subscribe $subscribe)
     {
-        $this->firebase_server_key = $customizer->get_theme_mod('server-key');
+        $this->subscribe = $subscribe;
 
         add_action('init', [$this, 'register']);
         add_filter('query_vars', [$this, 'addVars']);
@@ -45,54 +47,27 @@ class Users
     {
         if (isset($wp->query_vars[self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE])) {
             if ($wp->query_vars[self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE] === '1') {
-                $this->subscribe();
+                $this->subscribeToken();
                 exit;
             }
         }
     }
 
-    private function subscribe()
+    private function subscribeToken()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             var_dump('THIS IS GET');
             return false;
         }
-        $headers = [
-            'Authorization: key=' . $this->firebase_server_key,
-            'Content-Type: application/json'
-        ];
 
-        $data = [
-            'to' => '/topics/' . NotificationHttpV1::TOPIC_ALL,
-            'registration_tokens' => [$_POST['token']],
-            'priority' => 'high'
-        ];
-
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_URL, self::FCM_SERVER);
-        $response = curl_exec($ch);
-
-        $error = curl_error($ch);
-        $errno = curl_errno($ch);
-
-        curl_close($ch);
+        $result = $this->subscribe->subscribe([$_POST['token']]);
 
         // wp create post
         $user = $this->manageUser($_POST['uid'], $_POST['token']);
+        $result['user'] = $user;
 
         header('Content-Type: application/json');
-        echo json_encode([
-            'result' => $response,
-            'curl' => [
-                'error' => $error,
-                'errno' => $errno
-            ],
-            'user' => $user
-        ]);
+        echo json_encode($result);
 
         exit;
     }
