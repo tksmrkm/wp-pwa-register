@@ -6,9 +6,17 @@ class Firebase
 {
     use traits\Singleton;
 
-    public function init($container)
+    const CUSTOMIZER_KEY_APP_ID = 'app-id';
+    const CUSTOMIZER_KEY_API_KEY = 'api-key';
+    const CUSTOMIZER_KEY_PROJECT_ID = 'project-id';
+    const CUSTOMIZER_KEY_SENDER_ID = 'sender-id';
+    const CUSTOMIZER_KEY_SERVER_KEY = 'server-key';
+
+    private Customizer $customizer;
+
+    public function init(Customizer $customizer)
     {
-        $this->customizer = $container['customizer'];
+        $this->customizer = $customizer;
 
         add_filter('script_loader_tag', [$this, 'scriptLoader'], 10, 3);
     }

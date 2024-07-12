@@ -2,6 +2,8 @@
 
 namespace WpPwaRegister;
 
+use WpPwaRegister\Notifications\NotificationHttpV1;
+
 class Customizer
 {
     use traits\Singleton;
@@ -121,37 +123,37 @@ class Customizer
                 'description' => '登録ダイアログに表示されるメッセージ'
             ]
         ],
-        'app-id' => [
+        Firebase::CUSTOMIZER_KEY_APP_ID => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'App ID'
             ]
         ],
-        'sender-id' => [
+        Firebase::CUSTOMIZER_KEY_SENDER_ID => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'SenderID'
             ]
         ],
-        'api-key' => [
+        Firebase::CUSTOMIZER_KEY_API_KEY => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'apiKey'
             ]
         ],
-        'project-id' => [
+        Firebase::CUSTOMIZER_KEY_PROJECT_ID => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'projectId'
             ]
         ],
-        'server-key' => [
+        Firebase::CUSTOMIZER_KEY_SERVER_KEY => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'Server Key'
             ]
         ],
-        'certs-path' => [
+        NotificationHttpV1::CUSTOMIZER_CONFIG_PATH_KEY => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'Certs JSON PATH',

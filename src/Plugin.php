@@ -25,11 +25,12 @@ class Plugin
         $this->sw = new ServiceWorker($container['customizer']);
         $this->users = new Users($container['customizer']);
 
-        Firebase::getInstance($container);
+        Firebase::getInstance($container['customizer']);
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
         new Notifications\Option();
+        new Notifications\NotificationHttpV1($container['logs'], $container['customizer']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
 

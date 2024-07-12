@@ -4,6 +4,7 @@ namespace WpPwaRegister;
 
 use WP_Error;
 use WP_Query;
+use WpPwaRegister\Notifications\NotificationHttpV1;
 
 class Users
 {
@@ -62,7 +63,7 @@ class Users
         ];
 
         $data = [
-            'to' => '/topics/all',
+            'to' => '/topics/' . NotificationHttpV1::TOPIC_ALL,
             'registration_tokens' => [$_POST['token']],
             'priority' => 'high'
         ];
