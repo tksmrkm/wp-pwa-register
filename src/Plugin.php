@@ -21,12 +21,12 @@ class Plugin
         $container = [];
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
-        $container['subscribe'] = new Subscribe($container['customizer']);
+        $container['subscribe'] = new Subscribe($container['customizer'], $container['logs']);
         Api::getInstance($container);
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
         $this->sw = new ServiceWorker($container['customizer']);
-        $this->users = new Users($container['customizer'], $container['subscribe']);
+        $this->users = new Users($container['subscribe'], $container['logs']);
 
         Firebase::getInstance($container['customizer']);
         Notifications\Notifications::getInstance($container);

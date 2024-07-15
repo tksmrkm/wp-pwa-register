@@ -4,21 +4,25 @@ namespace WpPwaRegister\Notifications;
 
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Firebase;
-use WpPwaRegister\Users;
+use WpPwaRegister\Logs;
 
 class Subscribe
 {
     const FCM_SERVER = 'https://iid.googleapis.com/iid/v1:batchAdd';
     const FCM_BATCH_MAX_COUNT = 1000;
     private $firebase_server_key;
+    private Logs $logs;
 
-    public function __construct(Customizer $customizer)
+    public function __construct(Customizer $customizer, Logs $logs)
     {
         $this->firebase_server_key = $customizer->get_theme_mod(Firebase::CUSTOMIZER_KEY_SERVER_KEY);
+        $this->logs = $logs;
     }
 
     public function subscribe($tokens)
     {
+        $this->logs->debug($tokens);
+
         $headers = [
             'Authorization: key=' . $this->firebase_server_key,
             'Content-Type: application/json'
@@ -43,12 +47,14 @@ class Subscribe
 
         curl_close($ch);
 
-        return [
+        $retval = [
             'result' => json_decode($response),
             'curl' => [
                 'error' => $error,
                 'errno' => $errno
             ]
         ];
+
+        $this->logs->debug($retval);
     }
 }

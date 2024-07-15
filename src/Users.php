@@ -4,7 +4,6 @@ namespace WpPwaRegister;
 
 use WP_Error;
 use WP_Query;
-use WpPwaRegister\Notifications\NotificationHttpV1;
 use WpPwaRegister\Notifications\Subscribe;
 
 class Users
@@ -18,10 +17,12 @@ class Users
     const FCM_BATCH_MAX_COUNT = 1000;
 
     private Subscribe $subscribe;
+    private Logs $logs;
 
-    public function __construct(Customizer $customizer, Subscribe $subscribe)
+    public function __construct(Subscribe $subscribe, Logs $logs)
     {
         $this->subscribe = $subscribe;
+        $this->logs = $logs;
 
         add_action('init', [$this, 'register']);
         add_filter('query_vars', [$this, 'addVars']);
@@ -56,7 +57,7 @@ class Users
     private function subscribeToken()
     {
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            var_dump('THIS IS GET');
+            $this->logs->debug('GET method is not allowed');
             return false;
         }
 
@@ -68,6 +69,7 @@ class Users
 
         header('Content-Type: application/json');
         echo json_encode($result);
+        $this->logs->debug($result);
 
         exit;
     }
