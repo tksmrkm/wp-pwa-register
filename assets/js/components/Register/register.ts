@@ -3,12 +3,6 @@ import { signInAnonymously, getAuth } from 'firebase/auth'
 import app from '~/utils/firebase'
 import { expiredKey } from './load'
 
-type UserProps = {
-    id: string;
-    token: string;
-    deleted: boolean;
-}
-
 export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWorkerRegistration) => {
     const messaging = getMessaging(app)
     const token = await getToken(messaging, {
@@ -33,7 +27,8 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
     const subscribeBody = new FormData()
     subscribeBody.append('uid', user.user.uid)
     subscribeBody.append('token', token)
-    const result = await fetch('/pwa-subscribe', {
+
+    await fetch('/pwa-subscribe', {
         method: 'POST',
         body: subscribeBody
     })
@@ -45,6 +40,5 @@ export const handleRegisterSuccess = async (serviceWorkerRegistration: ServiceWo
         throw new Error(res.statusText)
     })
 
-    console.log(result)
     localStorage.setItem(expiredKey, (new Date()).getTime().toString())
 }

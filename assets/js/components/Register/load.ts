@@ -20,6 +20,7 @@ const handleLoad = async () => {
     }
 
     const expired = localStorage.getItem(expiredKey)
+
     if (expired) {
         const now = new Date()
         const diff = 30 * 24 * 60 * 60 * 1000 // 30days

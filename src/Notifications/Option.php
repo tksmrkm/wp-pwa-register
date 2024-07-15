@@ -82,7 +82,8 @@ class Option
                         'key' => Users::META_API_VERSION_KEY,
                         'compare' => 'NOT EXISTS'
                     ]
-                ]
+                ],
+                'posts_per_page' => -1
             ]);
             $migrated_users = new WP_Query([
                 'post_type' => Users::POST_SLUG,
@@ -93,7 +94,6 @@ class Option
                     ]
                 ]
             ]);
-            var_dump($legacy_users->post_count, $migrated_users->post_count);
 
             $max_count = Users::FCM_BATCH_MAX_COUNT;
             $exec_count = $legacy_users->post_count > $max_count ? $max_count: $legacy_users->post_count;
