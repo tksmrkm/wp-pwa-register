@@ -74,35 +74,83 @@ class Option
 
     public function _migrate_view()
     {
+        global $wpdb;
+        $api_version_key = Users::META_API_VERSION_KEY;
+
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-            $legacy_users = new WP_Query([
-                'post_type' => Users::POST_SLUG,
-                'meta_query' => [
-                    [
-                        'key' => Users::META_API_VERSION_KEY,
-                        'compare' => 'NOT EXISTS'
-                    ]
-                ],
-                'posts_per_page' => -1
-            ]);
-            $migrated_users = new WP_Query([
-                'post_type' => Users::POST_SLUG,
-                'meta_query' => [
-                    [
-                        'key' => Users::META_API_VERSION_KEY,
-                        'value' => "v2",
-                    ]
-                ]
-            ]);
+            $legacy_query = <<<QUERY
+            SELECT
+                count(Post.ID) as count
+            FROM
+                {$wpdb->posts} as `Post`
+            LEFT JOIN
+                {$wpdb->postmeta} as `Token`
+                    ON Token.post_id = Post.ID
+                    AND Token.meta_key = 'token'
+            LEFT JOIN
+                {$wpdb->postmeta} as `Deleted`
+                    ON Deleted.post_id = Post.ID
+                    AND Deleted.meta_key = 'deleted'
+            LEFT JOIN
+                {$wpdb->postmeta} as `Version`
+                    ON Version.post_id = Post.ID
+                    AND Version.meta_key = '{$api_version_key}'
+            WHERE
+                Post.post_status = 'draft'
+                AND
+                Deleted.meta_value IS NULL
+                AND
+                Post.post_type = 'pwa_users'
+                AND
+                Version.meta_value IS NULL
+            GROUP BY
+                Token.meta_value
+            ORDER BY
+                Post.ID
+            DESC
+            QUERY;
+            $v2_query = <<<QUERY
+            SELECT
+                count(Post.ID) as count
+            FROM
+                {$wpdb->posts} as `Post`
+            LEFT JOIN
+                {$wpdb->postmeta} as `Token`
+                    ON Token.post_id = Post.ID
+                    AND Token.meta_key = 'token'
+            LEFT JOIN
+                {$wpdb->postmeta} as `Deleted`
+                    ON Deleted.post_id = Post.ID
+                    AND Deleted.meta_key = 'deleted'
+            LEFT JOIN
+                {$wpdb->postmeta} as `Version`
+                    ON Version.post_id = Post.ID
+                    AND Version.meta_key = '{$api_version_key}'
+            WHERE
+                Post.post_status = 'draft'
+                AND
+                Deleted.meta_value IS NULL
+                AND
+                Post.post_type = 'pwa_users'
+                AND
+                Version.meta_value = 'v2'
+            GROUP BY
+                Token.meta_value
+            ORDER BY
+                Post.ID
+            DESC
+            QUERY;
+            $legacy_user_results = $wpdb->get_results($legacy_query);
+            $legacy_user_count = count($legacy_user_results) ? $legacy_user_results[0]->count: 0;
+            $migrated_user_results = $wpdb->get_results($v2_query);
+            $migrated_user_count = count($migrated_user_results) ? $migrated_user_results[0]->count: 0;
 
             $max_count = Users::FCM_BATCH_MAX_COUNT;
-            $exec_count = $legacy_users->post_count > $max_count ? $max_count: $legacy_users->post_count;
+            $exec_count = $legacy_user_count > $max_count ? $max_count: $legacy_user_count;
             $action_url = menu_page_url(self::MIGRATE_MENU_KEY, false);
 
             include_once ROOT . DS . 'templates' . DS . 'notifications' . DS . 'migrate.php';
         } else if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            global $wpdb;
-            $api_version_key = Users::META_API_VERSION_KEY;
             $query = <<<QUERY
             SELECT
                 Post.ID as id,

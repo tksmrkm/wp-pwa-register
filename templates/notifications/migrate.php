@@ -10,8 +10,8 @@
         </thead>
         <tbody>
             <tr>
-                <td><?php echo $legacy_users->post_count; ?></td>
-                <td><?php echo $migrated_users->post_count; ?></td>
+                <td><?php echo $legacy_user_count; ?></td>
+                <td><?php echo $migrated_user_count; ?></td>
             </tr>
         </tbody>
     </table>
