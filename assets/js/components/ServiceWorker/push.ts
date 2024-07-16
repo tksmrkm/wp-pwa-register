@@ -1,14 +1,14 @@
 declare const self: ServiceWorkerGlobalScope
 
 type LegacyData = {
-    version: 1;
     post_id: string;
 }
 
 type HttpV1Data = {
-    version: 2;
+    version: "v2";
     icon?: string;
     link: string;
+    post_id: string;
 }
 
 // expect data type
@@ -28,7 +28,7 @@ const pushHandler = (event: PushEvent) => {
     const _title = '<?php echo $title ?>'
     const _icon = '<?php echo $icon ?>'
 
-    if (json.data.version === 2) {
+    if ('version' in json.data && json.data.version === "v2") {
         // HTTP v1 API
         event.waitUntil(
             self.registration.showNotification(json.notification.title ?? _title, {
@@ -59,8 +59,7 @@ const pushHandler = (event: PushEvent) => {
                     body: json.title.rendered,
                     data: {
                         url: json.post_meta.link
-                    },
-                    vibrate: [200, 100, 200, 100, 200, 100, 200]
+                    }
                 }
 
                 return self.registration.showNotification(title, opts)
