@@ -56,5 +56,7 @@ class Subscribe
         ];
 
         $this->logs->debug($retval);
+
+        return $retval;
     }
 }
