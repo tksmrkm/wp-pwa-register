@@ -76,7 +76,10 @@ class Users
 
     private function manageUser($uid, $token)
     {
-        $query = new WP_Query(['title' => $uid]);
+        $query = new WP_Query([
+            'title' => $uid,
+            'post_type' => self::POST_SLUG
+        ]);
 
         if ($query->have_posts()) {
             $status = 'updated';
