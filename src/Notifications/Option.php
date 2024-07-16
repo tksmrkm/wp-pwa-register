@@ -194,8 +194,6 @@ class Option
 
                 $results = $this->subscribe->subscribe($tokens);
 
-                $this->logs->debug($results);
-
                 foreach ($results['result']->results as $index => $result) {
                     // error処理, 何もなければ正常処理でv2フラグを付ける
                     if (isset($result->error)) {
@@ -206,6 +204,12 @@ class Option
                         TOO_MANY_TOPICS - アプリ インスタンスあたりのトピック数が多すぎます。
                         RESOURCE_EXHAUSTED - 短期間での登録リクエストまたは登録解除リクエストが多すぎます。指数バックオフを使用して再試行する。
                          */
+
+                         $this->logs->debug([
+                            'index' => $index,
+                            'result' => $result,
+                            'id' => $ids[$index]
+                         ]);
 
                         if (
                             $result->error === 'NOT_FOUND'

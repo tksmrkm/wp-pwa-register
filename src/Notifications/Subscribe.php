@@ -21,8 +21,6 @@ class Subscribe
 
     public function subscribe($tokens)
     {
-        $this->logs->debug($tokens);
-
         $headers = [
             'Authorization: key=' . $this->firebase_server_key,
             'Content-Type: application/json'
@@ -54,8 +52,6 @@ class Subscribe
                 'errno' => $errno
             ]
         ];
-
-        $this->logs->debug($retval);
 
         return $retval;
     }
