@@ -53,10 +53,10 @@ class NotificationHttpV1
                     'body' => $content
                 ],
                 'data' => [
-                    'version' => 2,
+                    'version' => "2",
                     'icon' => $icon,
                     'link' => $link,
-                    'post_id' => $post_id
+                    'post_id' => "$post_id"
                 ]
             ]
         ];
