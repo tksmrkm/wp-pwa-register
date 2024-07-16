@@ -3,26 +3,108 @@
 namespace WpPwaRegister;
 
 use WP_Error;
+use WP_Query;
+use WpPwaRegister\Notifications\Subscribe;
 
 class Users
 {
     const MANAGE_CAP = 'manage_pwa_users';
     const POST_SLUG = 'pwa_users';
     const MANAGE_CREATED_COLUMN_KEY = 'created_date';
+    const QUERY_ROUTE_KEY_FOR_SUBSCRIBE = 'pwa-register-subscribe';
+    const META_API_VERSION_KEY = '_api_version';
+    const FCM_SERVER = 'https://iid.googleapis.com/iid/v1:batchAdd';
+    const FCM_BATCH_MAX_COUNT = 1000;
 
-    use traits\Singleton;
-    
-    public function init()
+    private Subscribe $subscribe;
+    private Logs $logs;
+
+    public function __construct(Subscribe $subscribe, Logs $logs)
     {
+        $this->subscribe = $subscribe;
+        $this->logs = $logs;
+
         add_action('init', [$this, 'register']);
+        add_filter('query_vars', [$this, 'addVars']);
+        add_action('parse_request', [$this, 'parseRequest']);
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
         add_filter('manage_edit-' . self::POST_SLUG . '_columns', [$this, 'manageColumns']);
         add_filter("manage_edit-" . self::POST_SLUG . "_sortable_columns", [$this, 'sortableColumns']);
     }
 
+    public function registerRoute()
+    {
+        add_rewrite_rule('^pwa-subscribe$', 'index.php?' . self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE . '=1', 'top');
+    }
+
+    public function addVars($vars)
+    {
+        $vars[] = self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE;
+        return $vars;
+    }
+
+    public function parseRequest($wp)
+    {
+        if (isset($wp->query_vars[self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE])) {
+            if ($wp->query_vars[self::QUERY_ROUTE_KEY_FOR_SUBSCRIBE] === '1') {
+                $this->subscribeToken();
+                exit;
+            }
+        }
+    }
+
+    private function subscribeToken()
+    {
+        if ($_SERVER['REQUEST_METHOD'] === 'GET') {
+            $this->logs->debug('GET method is not allowed');
+            return false;
+        }
+
+        $result = $this->subscribe->subscribe([$_POST['token']]);
+
+        // wp create post
+        $user = $this->manageUser($_POST['uid'], $_POST['token']);
+        $result['user'] = $user;
+
+        header('Content-Type: application/json');
+        echo json_encode($result);
+        $this->logs->debug($result);
+
+        exit;
+    }
+
+    private function manageUser($uid, $token)
+    {
+        $query = new WP_Query([
+            'title' => $uid,
+            'post_type' => self::POST_SLUG
+        ]);
+
+        if ($query->have_posts()) {
+            $status = 'updated';
+            $id = $query->post->ID;
+        } else {
+            $status = 'generated';
+            $id = wp_insert_post([
+                'post_title' => $uid,
+                'post_type' => self::POST_SLUG
+            ]);
+        }
+
+        update_post_meta($id, 'token', $token);
+        update_post_meta($id, self::META_API_VERSION_KEY, 'v2');
+
+        return [
+            'status' => $status,
+            'id' => $id
+        ];
+    }
+
     public function register()
     {
+        $this->registerRoute();
+
         $admin = get_role('administrator');
         $admin->add_cap(self::MANAGE_CAP);
 

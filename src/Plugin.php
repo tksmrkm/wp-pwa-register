@@ -2,31 +2,38 @@
 
 namespace WpPwaRegister;
 
+use WpPwaRegister\Notifications\Subscribe;
+
 class Plugin
 {
     const USERNAME = 'wp-pwa-register';
+    const OPTION_NAME = 'wp-pwa-register_admin-user-id';
 
     private $valid = null;
     private $customizer;
     private Register $register;
     private ServiceWorker $sw;
     private Manifest $manifest;
+    private Users $users;
 
     private function prepare()
     {
         $container = [];
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
+        $container['subscribe'] = new Subscribe($container['customizer'], $container['logs']);
         Api::getInstance($container);
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
         $this->sw = new ServiceWorker($container['customizer']);
-        Firebase::getInstance($container);
+        $this->users = new Users($container['subscribe'], $container['logs']);
+
+        Firebase::getInstance($container['customizer']);
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
-        new Notifications\Option();
-        Users::getInstance();
+        new Notifications\Option($container['subscribe'], $container['logs']);
+        new Notifications\NotificationHttpV1($container['logs'], $container['customizer']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
 
@@ -203,28 +210,28 @@ class Plugin
         $filename = ROOT . DS . 'userid';
         if (file_exists($filename)) {
             $userId = file_get_contents($filename);
-            wp_delete_user($userId);
             unlink($filename);
-            remove_role(self::USERNAME);
+        } else {
+            $userId = get_option(self::OPTION_NAME);
+            delete_option(self::OPTION_NAME);
         }
+        remove_role(self::USERNAME);
+        wp_delete_user($userId);
     }
 
     private function createUser()
     {
-        $username = self::USERNAME;
-        add_role($username, __('PWA Users 管理'), [
+        add_role(self::USERNAME, __('PWA Users 管理'), [
             'read' => true,
             'manage_pwa_users' => true
         ]);
         $password = wp_generate_password(12, true, true);
-        $userId = wp_create_user($username, $password, 'pseudo@example.com');
+        $userId = wp_create_user(self::USERNAME, $password, 'pseudo@example.com');
+        add_option(self::OPTION_NAME, $userId);
         wp_update_user([
             'ID' => $userId,
-            'role' => $username
+            'role' => self::USERNAME
         ]);
-        $fp = fopen(ROOT . DS . 'userid', 'w');
-        fwrite($fp, $userId);
-        fclose($fp);
     }
 
     public function rewrite_rules()
@@ -232,6 +239,7 @@ class Plugin
         $this->register->registerRoute();
         $this->sw->registerRoute();
         $this->manifest->registerRoute();
+        $this->users->registerRoute();
     }
 
     public function canonical($redirect, $request)

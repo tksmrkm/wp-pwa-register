@@ -5,3 +5,4 @@ userid
 
 /vendor/
 .env
+/tmp/
