@@ -28,6 +28,8 @@ const pushHandler = (event: PushEvent) => {
     const _title = '<?php echo $title ?>'
     const _icon = '<?php echo $icon ?>'
 
+    console.log(json);
+
     if ('version' in json.data && json.data.version === "v2") {
         // HTTP v1 API
         event.waitUntil(
