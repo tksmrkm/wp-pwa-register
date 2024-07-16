@@ -80,7 +80,7 @@ class Option
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $legacy_query = <<<QUERY
             SELECT
-                count(Token.meta_value) as count
+                count(DISTINCT Token.meta_value) as count
             FROM
                 {$wpdb->posts} as `Post`
             LEFT JOIN
@@ -103,15 +103,13 @@ class Option
                 Post.post_type = 'pwa_users'
                 AND
                 Version.meta_value IS NULL
-            GROUP BY
-                Token.meta_value
             ORDER BY
                 Post.ID
             DESC
             QUERY;
             $v2_query = <<<QUERY
             SELECT
-                count(Token.meta_value) as count
+                count(DISTINCT Token.meta_value) as count
             FROM
                 {$wpdb->posts} as `Post`
             LEFT JOIN
@@ -134,8 +132,6 @@ class Option
                 Post.post_type = 'pwa_users'
                 AND
                 Version.meta_value = 'v2'
-            GROUP BY
-                Token.meta_value
             ORDER BY
                 Post.ID
             DESC
