@@ -80,7 +80,7 @@ class Option
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $legacy_query = <<<QUERY
             SELECT
-                count(Post.ID) as count
+                count(Token.meta_value) as count
             FROM
                 {$wpdb->posts} as `Post`
             LEFT JOIN
@@ -111,7 +111,7 @@ class Option
             QUERY;
             $v2_query = <<<QUERY
             SELECT
-                count(Post.ID) as count
+                count(Token.meta_value) as count
             FROM
                 {$wpdb->posts} as `Post`
             LEFT JOIN
