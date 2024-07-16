@@ -11,7 +11,7 @@ use WpPwaRegister\Firebase;
 class NotificationHttpV1
 {
     const POST_SLUG = 'pwa_http_v1';
-    const META_CONTENT = 'content';
+    const META_HEADLINE = 'headline';
     const META_ICON = 'icon';
     const META_LINK = 'link';
     const TOPIC_ALL = 'all';
@@ -34,7 +34,7 @@ class NotificationHttpV1
     {
         $post;
         $title = $post->post_title;
-        $content = get_post_meta($post_id, self::META_CONTENT, true);
+        $headline = get_post_meta($post_id, self::META_HEADLINE, true);
         $icon = get_post_meta($post_id, self::META_ICON, true);
         $link = get_post_meta($post_id, self::META_LINK, true);
 
@@ -49,8 +49,8 @@ class NotificationHttpV1
             'message' => [
                 'topic' => self::TOPIC_ALL,
                 'notification' => [
-                    'title' => $title,
-                    'body' => $content
+                    'title' => $headline,
+                    'body' => $title
                 ],
                 'data' => [
                     'version' => "v2",

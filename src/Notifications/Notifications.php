@@ -2,7 +2,11 @@
 
 namespace WpPwaRegister\Notifications;
 
+use WP_HTTP_Response;
 use WP_Post;
+use WP_Query;
+use WP_REST_Request;
+use WP_REST_Server;
 use WpPwaRegister\Logs;
 use WpPwaRegister\traits\Singleton;
 use WpPwaRegister\Notifications\Post;
@@ -41,11 +45,40 @@ class Notifications
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('save_post', [$this, 'postSave'], 10, 3);
         add_action('trash_' . Post::POST_SLUG, [$this, 'trashPost'], 10, 2);
+        add_filter('rest_post_dispatch', [$this, 'restPostDispatch'], 10, 3);
 
         $pattern = "/^\/wp-json\/wp\/v2\/pwa_notifications\/.+$/";
         if (preg_match($pattern, $_SERVER['REQUEST_URI'])) {
             $this->sendHeaders();
         }
+    }
+
+    public function restPostDispatch(WP_HTTP_Response $response, WP_REST_Server $server, WP_REST_Request $request)
+    {
+        $route = $request->get_route();
+        $matched = preg_match('/^\/wp\/v2\/pwa_notifications/', $route);
+        if ($matched && $response->data["data"]["status"] === 404) {
+            $id = $request->get_param('id');
+            $post = new WP_Query(['p' => $id, 'post_type' => NotificationHttpV1::POST_SLUG]);
+
+            if ($post->have_posts()) {
+                $headline = get_post_meta($id, NotificationHttpV1::META_HEADLINE, true);
+                $icon = get_post_meta($id, NotificationHttpV1::META_ICON, true);
+                $link = get_post_meta($id, NotificationHttpV1::META_LINK, true);
+                $response->set_status(200);
+                $response->set_data([
+                    'title' => [
+                        'rendered' => $post->post->post_title
+                    ],
+                    'post_meta' => [
+                        'headline' => $headline,
+                        'icon' => $icon,
+                        'link' => $link,
+                    ],
+                ]);
+            }
+        }
+        return $response;
     }
 
     public function trashPost($post_id, $post)
