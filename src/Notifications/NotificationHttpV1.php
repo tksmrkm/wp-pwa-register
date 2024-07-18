@@ -28,6 +28,31 @@ class NotificationHttpV1
 
         add_action('init', [$this, 'register']);
         add_action('publish_' . self::POST_SLUG, [$this, 'publish'], 10, 2);
+        add_action('rest_api_init', [$this, 'restApiInit']);
+    }
+
+    public function updateCallback($value, $post)
+    {
+        if (!$value) {
+            return;
+        }
+
+        foreach ($value as $key => $data) {
+            if (is_array($data)) {
+                foreach ($data as $record) {
+                    add_post_meta($post->ID, $key, $record);
+                }
+            } else {
+                add_post_meta($post->ID, $key, $data);
+            }
+        }
+    }
+
+    public function restApiInit()
+    {
+        register_rest_field(self::POST_SLUG, 'post_meta', [
+            'update_callback' => [$this, 'updateCallback']
+        ]);
     }
 
     public function publish($post_id, WP_Post $post)
@@ -79,7 +104,7 @@ class NotificationHttpV1
         $res = register_post_type(self::POST_SLUG, [
             'label' => 'PUSH通知HTTPv1',
             'public' => false,
-            'show_in_rest' => false,
+            'show_in_rest' => true,
             'show_ui' => true,
             'supports' => [
                 'title',
