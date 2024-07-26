@@ -10,6 +10,7 @@ class Users
 {
     const MANAGE_CAP = 'manage_pwa_users';
     const POST_SLUG = 'pwa_users';
+    const CUSTOMIZER_SLUG_KEY = 'pwa_users_customized_slug';
     const MANAGE_CREATED_COLUMN_KEY = 'created_date';
     const QUERY_ROUTE_KEY_FOR_SUBSCRIBE = 'pwa-register-subscribe';
     const META_API_VERSION_KEY = '_api_version';
@@ -18,19 +19,22 @@ class Users
 
     private Subscribe $subscribe;
     private Logs $logs;
+    private string $slug;
 
-    public function __construct(Subscribe $subscribe, Logs $logs)
+    public function __construct(Customizer $customizer, Subscribe $subscribe, Logs $logs)
     {
         $this->subscribe = $subscribe;
         $this->logs = $logs;
+
+        $this->slug = $customizer->get_theme_mod(self::CUSTOMIZER_SLUG_KEY, self::POST_SLUG);
 
         add_action('init', [$this, 'register']);
         add_filter('query_vars', [$this, 'addVars']);
         add_action('parse_request', [$this, 'parseRequest']);
         add_action('rest_api_init', [$this, 'restApiInit']);
         add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
-        add_filter('manage_edit-' . self::POST_SLUG . '_columns', [$this, 'manageColumns']);
-        add_filter("manage_edit-" . self::POST_SLUG . "_sortable_columns", [$this, 'sortableColumns']);
+        add_filter('manage_edit-' . $this->slug . '_columns', [$this, 'manageColumns']);
+        add_filter("manage_edit-" . $this->slug . "_sortable_columns", [$this, 'sortableColumns']);
     }
 
     public function registerRoute()
@@ -78,7 +82,7 @@ class Users
     {
         $query = new WP_Query([
             'title' => $uid,
-            'post_type' => self::POST_SLUG
+            'post_type' => $this->slug
         ]);
 
         if ($query->have_posts()) {
@@ -88,7 +92,7 @@ class Users
             $status = 'generated';
             $id = wp_insert_post([
                 'post_title' => $uid,
-                'post_type' => self::POST_SLUG
+                'post_type' => $this->slug
             ]);
         }
 
@@ -108,7 +112,7 @@ class Users
         $admin = get_role('administrator');
         $admin->add_cap(self::MANAGE_CAP);
 
-        register_post_type(Users::POST_SLUG, [
+        register_post_type($this->slug, [
             'label' => 'pwa_users',
             'labels' => [
                 'name' => 'pwa_users',
