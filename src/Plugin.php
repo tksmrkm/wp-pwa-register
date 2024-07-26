@@ -26,7 +26,7 @@ class Plugin
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
         $this->sw = new ServiceWorker($container['customizer']);
-        $this->users = new Users($container['subscribe'], $container['logs']);
+        $this->users = new Users($container['customizer'], $container['subscribe'], $container['logs']);
 
         Firebase::getInstance($container['customizer']);
         Notifications\Notifications::getInstance($container);

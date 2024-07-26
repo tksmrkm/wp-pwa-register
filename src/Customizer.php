@@ -123,6 +123,15 @@ class Customizer
                 'description' => '登録ダイアログに表示されるメッセージ'
             ]
         ],
+        Users::CUSTOMIZER_SLUG_KEY => [
+            'control_option' => [
+                'section' => 'register',
+                'label' => 'PWA Userスラッグ',
+            ],
+            'option' => [
+                'default' => Users::POST_SLUG
+            ]
+        ],
         Firebase::CUSTOMIZER_KEY_APP_ID => [
             'control_option' => [
                 'section' => 'firebase',
