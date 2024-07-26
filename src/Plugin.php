@@ -32,7 +32,7 @@ class Plugin
         Notifications\Notifications::getInstance($container);
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
-        new Notifications\Option($container['subscribe'], $container['logs']);
+        new Notifications\Option($container['customizer'], $container['subscribe'], $container['logs']);
         new Notifications\NotificationHttpV1($container['logs'], $container['customizer']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
