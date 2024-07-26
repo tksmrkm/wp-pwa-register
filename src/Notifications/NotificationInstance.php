@@ -2,7 +2,9 @@
 
 namespace WpPwaRegister\Notifications;
 
+use WpPwaRegister\Customizer;
 use WpPwaRegister\Logs;
+use WpPwaRegister\Users;
 
 class NotificationInstance
 {
@@ -13,7 +15,7 @@ class NotificationInstance
     const PARENT_KEY = '_parent';
 
     private Logs $logs;
-    private $customizer;
+    private Customizer $customizer;
     private $firebase_server_key;
     private $delete_flag = true;
     private $start_time;
@@ -231,6 +233,8 @@ class NotificationInstance
     {
         global $wpdb;
 
+        $pwa_users = $this->customizer->get_theme_mod(Users::CUSTOMIZER_SLUG_KEY, Users::POST_SLUG);
+
         $page = 0;
         $limit = 1000;
 
@@ -257,7 +261,7 @@ class NotificationInstance
             WHERE
                 Post.post_status = 'draft'
                 AND
-                Post.post_type = 'pwa_users'
+                Post.post_type = '{$pwa_users}'
                 AND
                 Deleted.meta_value IS NULL
                 AND

@@ -4,6 +4,7 @@ namespace WpPwaRegister\Notifications;
 
 use WP_Meta_Query;
 use WP_Query;
+use WpPwaRegister\Customizer;
 use WpPwaRegister\Logs;
 use WpPwaRegister\Users;
 
@@ -15,11 +16,13 @@ class Option
     const MENU_KEY = 'wp-pwa-register-option';
     const MIGRATE_MENU_KEY = 'wp-pwa-register-user-migration';
 
+    private Customizer $customizer;
     private Subscribe $subscribe;
     private Logs $logs;
 
-    public function __construct(Subscribe $subscribe, Logs $logs)
+    public function __construct(Customizer $customizer, Subscribe $subscribe, Logs $logs)
     {
+        $this->customizer = $customizer;
         $this->subscribe = $subscribe;
         $this->logs = $logs;
         add_action('admin_menu', [$this, 'adminMenu']);
@@ -76,6 +79,7 @@ class Option
     {
         global $wpdb;
         $api_version_key = Users::META_API_VERSION_KEY;
+        $pwa_users = $this->customizer->get_theme_mod(Users::CUSTOMIZER_SLUG_KEY, Users::POST_SLUG);
 
         if ($_SERVER['REQUEST_METHOD'] === 'GET') {
             $legacy_query = <<<QUERY
@@ -100,7 +104,7 @@ class Option
                 AND
                 Deleted.meta_value IS NULL
                 AND
-                Post.post_type = 'pwa_users'
+                Post.post_type = '{$pwa_users}'
                 AND
                 Version.meta_value IS NULL
             ORDER BY
@@ -129,7 +133,7 @@ class Option
                 AND
                 Deleted.meta_value IS NULL
                 AND
-                Post.post_type = 'pwa_users'
+                Post.post_type = '{$pwa_users}'
                 AND
                 Version.meta_value = 'v2'
             ORDER BY
