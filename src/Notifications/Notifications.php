@@ -56,7 +56,8 @@ class Notifications
     public function restPostDispatch(WP_HTTP_Response $response, WP_REST_Server $server, WP_REST_Request $request)
     {
         $route = $request->get_route();
-        $matched = preg_match('/^\/wp\/v2\/pwa_notifications/', $route);
+        $slug = $this->customizer->get_theme_mod('notifications_fallback_slug', 'pwa_notifications');
+        $matched = preg_match('/^\/wp\/v2\/' . $slug . '/', $route);
         if ($matched && $response->data["data"]["status"] === 404) {
             $id = $request->get_param('id');
             $post = new WP_Query(['p' => $id, 'post_type' => NotificationHttpV1::POST_SLUG]);
