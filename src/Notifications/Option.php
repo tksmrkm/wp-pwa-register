@@ -175,7 +175,7 @@ class Option
                 AND
                 Deleted.meta_value IS NULL
                 AND
-                Post.post_type = 'pwa_users'
+                Post.post_type = '{$pwa_users}'
                 AND
                 Version.meta_value IS NULL
             GROUP BY
