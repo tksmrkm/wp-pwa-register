@@ -310,6 +310,16 @@ class Customizer
             'option' => [
                 'default' => 180
             ]
+        ],
+        'notifications_fallback_slug' => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'API Fallback Slug',
+                'description' => '/wp/v2/${pwa_notifications}'
+            ],
+            'option' => [
+                'default' => 'pwa_notifications'
+            ]
         ]
     ];
 
