@@ -81,7 +81,8 @@ class NotificationHttpV1
                     'icon' => $icon,
                     'link' => $link,
                     'post_id' => "$post_id"
-                ]
+                ],
+                'analyticsLabel' => $post_id
             ]
         ];
 
