@@ -11,7 +11,7 @@ define('VERSION', $pkg->version);
 /*
 Plugin Name: WP PWA Register
 Description: WordpressにPWA(Progressive Web Apps)を適用させる。
-Version: 1.8.8
+Version: 1.8.9
 */
 
 require_once ROOT . DS . 'vendor' . DS . 'autoload.php';
