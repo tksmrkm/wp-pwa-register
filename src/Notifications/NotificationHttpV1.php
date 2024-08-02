@@ -82,7 +82,11 @@ class NotificationHttpV1
                     'link' => $link,
                     'post_id' => "$post_id"
                 ],
-                'analyticsLabel' => $post_id
+                'webpush' => [
+                    'fcm_options' => [
+                        'analytics_label' => "$post_id"
+                    ]
+                ]
             ]
         ];
 
