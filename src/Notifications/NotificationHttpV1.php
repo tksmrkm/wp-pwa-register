@@ -57,7 +57,6 @@ class NotificationHttpV1
 
     public function publish($post_id, WP_Post $post)
     {
-        $post;
         $title = $post->post_title;
         $headline = get_post_meta($post_id, self::META_HEADLINE, true);
         $icon = get_post_meta($post_id, self::META_ICON, true);
@@ -82,6 +81,11 @@ class NotificationHttpV1
                     'icon' => $icon,
                     'link' => $link,
                     'post_id' => "$post_id"
+                ],
+                'webpush' => [
+                    'fcm_options' => [
+                        'analytics_label' => "$post_id"
+                    ]
                 ]
             ]
         ];
