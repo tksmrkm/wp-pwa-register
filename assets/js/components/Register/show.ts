@@ -52,11 +52,11 @@ const getMessage = () => {
     return node
 }
 
-const getAcceptButton = () => {
+const getAcceptButton = (uid: string) => {
     const node = document.createElement('button')
     node.setAttribute('id', 'wp-pwa-register-accept-button')
     node.textContent = '通知を受け取る'
-    node.addEventListener('click', handleRequest)
+    node.addEventListener('click', handleRequest(uid))
     node.addEventListener('click', handleCloseModal)
     return node
 }
@@ -70,7 +70,7 @@ const getCancelButton = () => {
     return node
 }
 
-const handleShow = () => {
+const handleShow = (uid: string) => {
     // 通知バナーで受け取らないをクリックした日時
     const canceled = localStorage.getItem(canceledId)
 
@@ -92,7 +92,7 @@ const handleShow = () => {
     const footer = getFooter()
     const banner = getBanner()
     const message = getMessage()
-    const acceptButton = getAcceptButton()
+    const acceptButton = getAcceptButton(uid)
     const cancelButton = getCancelButton()
 
     if (banner) {

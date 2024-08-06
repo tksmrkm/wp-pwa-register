@@ -2,6 +2,8 @@ import { isSupported } from 'firebase/messaging';
 import handleShow from './show';
 import handleRequest from './request';
 import { handleRegisterSuccess } from './register';
+import { getAuth, signInAnonymously } from 'firebase/auth';
+import app from '~/utils/firebase';
 
 export const expiredKey = 'tokenSubscribedDatetime'
 
@@ -36,12 +38,20 @@ const handleLoad = async () => {
         }
     }
 
+    const auth = getAuth(app)
+    const user = await signInAnonymously(auth)
+    .catch(console.warn)
+
+    if (!user) {
+        throw new Error('Failed to sign in anonymously')
+    }
+
     if (!WP_REGISTER_SERVICE_WORKER.register.useDialog) {
         /**
          * Legacy method
          * all users start registration onLoad
          */
-        handleRequest()
+        handleRequest(user.user.uid)()
         return false
     }
 
@@ -49,7 +59,7 @@ const handleLoad = async () => {
         // granted browser renew tokens
         const registration = await navigator.serviceWorker.getRegistration()
         if (registration) {
-            handleRegisterSuccess(registration)
+            handleRegisterSuccess(user.user.uid)(registration)
         }
         return false
     }
@@ -60,7 +70,7 @@ const handleLoad = async () => {
         return false
     }
 
-    handleShow()
+    handleShow(user.user.uid)
 }
 
 export default handleLoad

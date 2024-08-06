@@ -6,11 +6,11 @@ interface ExtendedWorkerNavigator extends WorkerNavigator{
 
 declare const navigator: ExtendedWorkerNavigator
 
-const handleRequest = () => {
+const handleRequest = (uid: string) => () => {
     navigator
         .serviceWorker
-        ?.register('/pwa-service-worker.js')
-        .then(handleRegisterSuccess)
+        ?.register(`/pwa-service-worker.js?uid=${uid}`)
+        .then(handleRegisterSuccess(uid))
         .catch(console.warn)
 }
 
