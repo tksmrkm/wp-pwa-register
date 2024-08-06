@@ -4,6 +4,8 @@ namespace WpPwaRegister\Notifications;
 
 use Google\Client;
 use WP_Post;
+use WpPwaRegister\Analyzer\Analyzer;
+use WpPwaRegister\Analyzer\Database;
 use WpPwaRegister\Logs;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Firebase;
@@ -16,14 +18,19 @@ class NotificationHttpV1
     const META_LINK = 'link';
     const TOPIC_ALL = 'all';
     const CUSTOMIZER_CONFIG_PATH_KEY = 'certs-path';
+    const CUSTOMIZER_CONFIG_REWRITE_LINK_KEY = 'rewrite-link-flag';
     const FIREBASE_MESSAGING_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
     const DELETION_COLUMN_KEY = 'deletion';
+    const COUNT_COLUMN_KEY = 'count';
+    const FILTER_HOOK_LINK = 'pwa_push_link';
 
+    private Database $db;
     private Logs $logs;
     private Customizer $customizer;
 
-    public function __construct(Logs $logs, Customizer $customizer)
+    public function __construct(Database $db, Logs $logs, Customizer $customizer)
     {
+        $this->db = $db;
         $this->logs = $logs;
         $this->customizer = $customizer;
 
@@ -33,11 +40,25 @@ class NotificationHttpV1
         add_action('trash_' . self::POST_SLUG, [$this, 'trashPost'], 10, 2);
         add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
         add_filter('manage_edit-' . self::POST_SLUG . '_columns', [$this, 'manageColumns']);
+        add_filter(self::FILTER_HOOK_LINK, [$this, 'pushLink'], 10, 2);
+    }
+
+    public function pushLink($link, $post_id)
+    {
+        $flag = $this->customizer->get_theme_mod(self::CUSTOMIZER_CONFIG_REWRITE_LINK_KEY, false);
+
+        if ($flag) {
+            $base = get_home_url() . '/' . Analyzer::RESOURCE_PATH;
+            return $base . '?link=' . rawurlencode($link) . '&pid=' . $post_id;
+        }
+
+        return $link;
     }
 
     public function manageColumns($columns)
     {
         $columns[self::DELETION_COLUMN_KEY] = '削除';
+        $columns[self::COUNT_COLUMN_KEY] = 'カウント';
         return $columns;
     }
 
@@ -51,6 +72,10 @@ class NotificationHttpV1
                 '" onClick="return confirm(\'削除を実行する？\')">delete: ',
                 $post_id,
                 '</a>';
+        }
+
+        if ($column === self::COUNT_COLUMN_KEY) {
+            echo $this->db->get_count($post_id);
         }
     }
 
@@ -91,6 +116,7 @@ class NotificationHttpV1
         $headline = get_post_meta($post_id, self::META_HEADLINE, true);
         $icon = get_post_meta($post_id, self::META_ICON, true);
         $link = get_post_meta($post_id, self::META_LINK, true);
+        $link = apply_filters(self::FILTER_HOOK_LINK, $link, $post_id);
 
         $google = new Client();
         $authConfigPath = $this->customizer->get_theme_mod(self::CUSTOMIZER_CONFIG_PATH_KEY);

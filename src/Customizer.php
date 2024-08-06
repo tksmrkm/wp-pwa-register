@@ -169,6 +169,17 @@ class Customizer
                 'description' => '** NOTICE ** put JSON file on private directory.<br>ex) /var/www/html/certs.json'
             ]
         ],
+        NotificationHttpV1::CUSTOMIZER_CONFIG_REWRITE_LINK_KEY => [
+            'option' => [
+                'default' => false
+            ],
+            'control_option' => [
+                'section' => 'firebase',
+                'label' => 'linkを置き換える',
+                'description' => '解析後リダイレクトする自サイト宛に置き換える (/pwa_redirect?target=***',
+                'type' => 'checkbox'
+            ]
+        ],
         'name' => [
             'control_option' => [
                 'section' => 'manifest',

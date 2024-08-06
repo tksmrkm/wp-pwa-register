@@ -2,6 +2,9 @@
 
 namespace WpPwaRegister;
 
+use WpPwaRegister\Analyzer\Analyzer;
+use WpPwaRegister\Analyzer\Database;
+use WpPwaRegister\Analyzer\Option;
 use WpPwaRegister\Notifications\Subscribe;
 
 class Plugin
@@ -19,9 +22,11 @@ class Plugin
     private function prepare()
     {
         $container = [];
+        $container['analyzer_database'] = new Database();
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
         $container['subscribe'] = new Subscribe($container['customizer'], $container['logs']);
+
         Api::getInstance($container);
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
@@ -33,9 +38,12 @@ class Plugin
         new Notifications\Post();
         new Notifications\NotificationInstance($container['logs'], $container['customizer']);
         new Notifications\Option($container['customizer'], $container['subscribe'], $container['logs']);
-        new Notifications\NotificationHttpV1($container['logs'], $container['customizer']);
+        new Notifications\NotificationHttpV1($container['analyzer_database'], $container['logs'], $container['customizer']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
+
+        new Analyzer($container['analyzer_database']);
+        new Option($container['analyzer_database']);
 
         $this->customizer = $container['customizer'];
     }
