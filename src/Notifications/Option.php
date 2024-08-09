@@ -2,10 +2,9 @@
 
 namespace WpPwaRegister\Notifications;
 
-use WP_Meta_Query;
-use WP_Query;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Logs;
+use WpPwaRegister\Option as WpPwaRegisterOption;
 use WpPwaRegister\Users;
 
 use const WpPwaRegister\DS;
@@ -13,7 +12,6 @@ use const WpPwaRegister\ROOT;
 
 class Option
 {
-    const MENU_KEY = 'wp-pwa-register-option';
     const MIGRATE_MENU_KEY = 'wp-pwa-register-user-migration';
 
     private Customizer $customizer;
@@ -30,8 +28,7 @@ class Option
 
     public function adminMenu()
     {
-        add_menu_page('WP PWA Register', 'WP PWA Register', 'administrator', self::MENU_KEY, [$this, '_view']);
-        add_submenu_page(self::MENU_KEY, 'User migrate to Http v1', 'User migrate to Http v1', 'administrator', self::MIGRATE_MENU_KEY, [$this, '_migrate_view']);
+        add_submenu_page(WpPwaRegisterOption::MENU_KEY, 'User migrate to Http v1', 'User migrate to Http v1', 'administrator', self::MIGRATE_MENU_KEY, [$this, '_migrate_view']);
     }
 
     public function _view()

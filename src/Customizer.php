@@ -101,13 +101,6 @@ class Customizer
                 'type' => 'checkbox'
             ]
         ],
-        'application-password' => [
-            'control_option' => [
-                'section' => 'register',
-                'label' => 'Application Passwords',
-                'description' => 'Application Passwordsで発行されたパスワード'
-            ]
-        ],
         'register-icon' => [
             'control_option' => [
                 'section' => 'register',

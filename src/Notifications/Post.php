@@ -2,6 +2,8 @@
 
 namespace WpPwaRegister\Notifications;
 
+use WpPwaRegister\Option;
+
 class Post
 {
     const POST_SLUG = 'pwa_notifications';
