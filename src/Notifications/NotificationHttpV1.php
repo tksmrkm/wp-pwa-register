@@ -7,6 +7,7 @@ use WP_Post;
 use WpPwaRegister\Logs;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Firebase;
+use WpPwaRegister\Option;
 
 class NotificationHttpV1
 {
@@ -30,35 +31,6 @@ class NotificationHttpV1
         add_action('init', [$this, 'register']);
         add_action('publish_' . self::POST_SLUG, [$this, 'publish'], 10, 2);
         add_action('rest_api_init', [$this, 'restApiInit']);
-        add_action('trash_' . self::POST_SLUG, [$this, 'trashPost'], 10, 2);
-        add_action('manage_posts_custom_column', [$this, 'addCustomColumn'], 10, 2);
-        add_filter('manage_edit-' . self::POST_SLUG . '_columns', [$this, 'manageColumns']);
-    }
-
-    public function manageColumns($columns)
-    {
-        $columns[self::DELETION_COLUMN_KEY] = '削除';
-        return $columns;
-    }
-
-    public function addCustomColumn($column, $post_id)
-    {
-        if ($column === self::DELETION_COLUMN_KEY) {
-            echo '<a href="',
-                menu_page_url(Option::MENU_KEY, false),
-                '&post_id=',
-                $post_id,
-                '" onClick="return confirm(\'削除を実行する？\')">delete: ',
-                $post_id,
-                '</a>';
-        }
-    }
-
-    public function trashPost($post_id, $post)
-    {
-        if ($post->post_type === self::POST_SLUG) {
-            wp_trash_post($post_id);
-        }
     }
 
     public function updateCallback($value, $post)

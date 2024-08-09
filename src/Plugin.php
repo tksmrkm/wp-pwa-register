@@ -22,6 +22,8 @@ class Plugin
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
         $container['subscribe'] = new Subscribe($container['customizer'], $container['logs']);
+
+        new Option();
         Api::getInstance($container);
         $this->manifest = new Manifest($container['customizer']);
         $this->register = new Register([$this, 'callable_valid']);
