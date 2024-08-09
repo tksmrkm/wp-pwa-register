@@ -2,8 +2,6 @@
 
 namespace WpPwaRegister\Notifications;
 
-use WP_Meta_Query;
-use WP_Query;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Logs;
 use WpPwaRegister\Users;

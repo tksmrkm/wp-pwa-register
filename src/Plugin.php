@@ -29,9 +29,9 @@ class Plugin
         $this->users = new Users($container['customizer'], $container['subscribe'], $container['logs']);
 
         new Firebase($container['customizer']);
-        Notifications\Notifications::getInstance($container);
-        new Notifications\Post();
-        new Notifications\NotificationInstance($container['logs'], $container['customizer']);
+        // Notifications\Notifications::getInstance($container);
+        // new Notifications\Post();
+        // new Notifications\NotificationInstance($container['logs'], $container['customizer']);
         new Notifications\Option($container['customizer'], $container['subscribe'], $container['logs']);
         new Notifications\NotificationHttpV1($container['logs'], $container['customizer']);
         MetaBoxes\PushFlag::getInstance();
@@ -123,7 +123,6 @@ class Plugin
         $this->valid = $this->customizer->get_theme_mod('enable', false)
         && $this->enableOnLoggedIn()
         && $this->enableToRestrictOnIp()
-        && $this->customizer->get_theme_mod('application-password')
         && $this->customizer->get_theme_mod('sender-id')
         && $this->customizer->get_theme_mod('api-key')
         && $this->customizer->get_theme_mod('project-id')
@@ -131,6 +130,7 @@ class Plugin
         && $this->customizer->get_theme_mod('icon-src')
         && $this->customizer->get_theme_mod('icon-sizes')
         && $this->customizer->get_theme_mod('icon-type');
+
         return apply_filters( 'wp-pwa-register-valid-status', $this->valid );
     }
 
@@ -167,10 +167,6 @@ class Plugin
     public function enqueueScripts()
     {
         wp_localize_script('pwa-register', 'WP_REGISTER_SERVICE_WORKER', [
-            'webroot' => get_home_url(),
-            'root' => esc_url_raw(rest_url()),
-            'base64' => base64_encode(self::USERNAME . ':' . $this->customizer->get_theme_mod('application-password')),
-            'debug' => $this->customizer->get_theme_mod('debug', false),
             'register' => [
                 'useDialog' => $this->customizer->get_theme_mod('using-register-dialog', false),
                 'icon' => $this->customizer->get_theme_mod('register-icon', false),
