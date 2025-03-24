@@ -37,27 +37,10 @@ class Subscribe
             'priority' => 'high'
         ];
 
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'POST');
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
-        curl_setopt($ch, CURLOPT_URL, self::FCM_SERVER);
-        $response = curl_exec($ch);
+        $result = $this->client->request('POST', self::FCM_SERVER, [
+            'json' => $data
+        ]);
 
-        $error = curl_error($ch);
-        $errno = curl_errno($ch);
-
-        curl_close($ch);
-
-        $retval = [
-            'result' => json_decode($response),
-            'curl' => [
-                'error' => $error,
-                'errno' => $errno
-            ]
-        ];
-
-        return $retval;
+        return json_decode($result->getBody()->getContents());
     }
 }
