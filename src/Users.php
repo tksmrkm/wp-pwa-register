@@ -90,8 +90,6 @@ class Users
             'post_status' => 'draft,publish'
         ]);
 
-        $this->logs->debug([$uid, $this->slug]);
-
         if ($query->have_posts()) {
             $status = 'updated';
             $id = $query->post->ID;

@@ -29,14 +29,15 @@ class Subscribe
             $data = [
                 'to' => '/topics/' . NotificationHttpV1::TOPIC_ALL,
                 'registration_tokens' => $tokens,
-                'priority' => 'high'
             ];
 
-            $accessTokenArray = $client->fetchAccessTokenWithAssertion();
-            $accessToken = $accessTokenArray["access_token"];
+            $accessToken = $client->fetchAccessTokenWithAssertion();
+            $accessTokenString = $accessToken['access_token'];
+
             $headers = [
-                'access_token_auth' => true,
-                'Authorization' => "Bearer {$accessToken}"
+                "Authorization: Bearer {$accessTokenString}",
+                'Content-Type: application/json',
+                'access_token_auth: true'
             ];
 
             $ch = curl_init();
@@ -57,10 +58,8 @@ class Subscribe
                 'curl' => [
                     'error' => $error,
                     'errno' => $errno
-                ]
+                ],
             ];
-
-            $this->logs->debug($retval);
 
             return $retval;
         } else {
