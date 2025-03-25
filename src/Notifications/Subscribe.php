@@ -2,7 +2,6 @@
 
 namespace WpPwaRegister\Notifications;
 
-use GuzzleHttp\ClientInterface;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Firebase;
 use WpPwaRegister\GoogleClient;
@@ -13,34 +12,43 @@ class Subscribe
     const FCM_SERVER = 'https://iid.googleapis.com/iid/v1:batchAdd';
     const FCM_BATCH_MAX_COUNT = 1000;
 
-    private $firebase_server_key;
     private Logs $logs;
-    private ClientInterface $client;
+    private GoogleClient $client;
 
-    public function __construct(Customizer $customizer, Logs $logs, GoogleClient $client)
+    public function __construct(GoogleClient $client, Logs $logs)
     {
-        $this->firebase_server_key = $customizer->get_theme_mod(Firebase::CUSTOMIZER_KEY_SERVER_KEY);
         $this->logs = $logs;
-        $this->client = $client->getClient();
+        $this->client = $client;
     }
 
     public function subscribe($tokens)
     {
-        $headers = [
-            'Authorization: key=' . $this->firebase_server_key,
-            'Content-Type: application/json'
-        ];
+        $client = $this->client->getClient();
 
-        $data = [
-            'to' => '/topics/' . NotificationHttpV1::TOPIC_ALL,
-            'registration_tokens' => $tokens,
-            'priority' => 'high'
-        ];
+        if ($client) {
+            $data = [
+                'to' => '/topics/' . NotificationHttpV1::TOPIC_ALL,
+                'registration_tokens' => $tokens,
+                'priority' => 'high'
+            ];
 
-        $result = $this->client->request('POST', self::FCM_SERVER, [
-            'json' => $data
-        ]);
+            $accessTokenArray = $client->fetchAccessTokenWithAssertion();
+            $accessToken = $accessTokenArray["access_token"];
+            $headers = [
+                'access_token_auth' => true,
+                'Authorization' => "Bearer {$accessToken}"
+            ];
 
-        return json_decode($result->getBody()->getContents());
+            $ch = curl_init(self::FCM_SERVER);
+            curl_setopt($ch, CURLOPT_HEADER, $headers);
+
+            $retval = [];
+
+            $this->logs->debug($retval);
+
+            return $retval;
+        } else {
+            $this->logs->debug("Client is not prepared yet");
+        }
     }
 }

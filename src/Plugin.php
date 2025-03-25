@@ -22,7 +22,7 @@ class Plugin
         $container['customizer'] = Customizer::getInstance();
         $container['logs'] = Logs::getInstance();
         $container['google_client'] = new GoogleClient($container['customizer']);
-        $container['subscribe'] = new Subscribe($container['customizer'], $container['logs'], $container['google_client']);
+        $container['subscribe'] = new Subscribe($container['google_client'], $container['logs']);
 
         new Option();
         Api::getInstance($container);
