@@ -2,12 +2,12 @@
 
 namespace WpPwaRegister\Notifications;
 
-use Google\Client;
+use GuzzleHttp\ClientInterface;
 use WP_Post;
 use WpPwaRegister\Logs;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Firebase;
-use WpPwaRegister\Option;
+use WpPwaRegister\GoogleClient;
 
 class NotificationHttpV1
 {
@@ -16,17 +16,17 @@ class NotificationHttpV1
     const META_ICON = 'icon';
     const META_LINK = 'link';
     const TOPIC_ALL = 'all';
-    const CUSTOMIZER_CONFIG_PATH_KEY = 'certs-path';
-    const FIREBASE_MESSAGING_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
     const DELETION_COLUMN_KEY = 'deletion';
 
     private Logs $logs;
     private Customizer $customizer;
+    private GoogleClient $client;
 
-    public function __construct(Logs $logs, Customizer $customizer)
+    public function __construct(Logs $logs, Customizer $customizer, GoogleClient $client)
     {
         $this->logs = $logs;
         $this->customizer = $customizer;
+        $this->client = $client;
 
         add_action('init', [$this, 'register']);
         add_action('publish_' . self::POST_SLUG, [$this, 'publish'], 10, 2);
@@ -64,13 +64,6 @@ class NotificationHttpV1
         $icon = get_post_meta($post_id, self::META_ICON, true);
         $link = get_post_meta($post_id, self::META_LINK, true);
 
-        $google = new Client();
-        $authConfigPath = $this->customizer->get_theme_mod(self::CUSTOMIZER_CONFIG_PATH_KEY);
-        $google->setAuthConfig($authConfigPath);
-        $google->useApplicationDefaultCredentials();
-        $google->addScope(self::FIREBASE_MESSAGING_SCOPE);
-        $client = $google->authorize();
-
         $data = [
             'message' => [
                 'topic' => self::TOPIC_ALL,
@@ -95,14 +88,18 @@ class NotificationHttpV1
         $project_id = $this->customizer->get_theme_mod(Firebase::CUSTOMIZER_KEY_PROJECT_ID);
         $target = 'https://fcm.googleapis.com/v1/projects/' . $project_id . '/messages:send';
 
-        $result = $client->request('POST', $target, [
-            'json' => $data
-        ]);
+        $client = $this->client->getClient();
 
-        $json = json_decode($result->getBody()->getContents());
+        if ($client) {
+            $result = $client->authorize()->request('POST', $target, [
+                'json' => $data
+            ]);
 
-        $this->logs->debug($data);
-        $this->logs->debug($json);
+            $json = json_decode($result->getBody()->getContents());
+
+            $this->logs->debug($data);
+            $this->logs->debug($json);
+        }
     }
 
     public function register()

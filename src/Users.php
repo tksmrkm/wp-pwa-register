@@ -65,15 +65,19 @@ class Users
             return false;
         }
 
+        $container = [];
+
         $result = $this->subscribe->subscribe([$_POST['token']]);
+
+        $container["result"] = $result;
 
         // wp create post
         $user = $this->manageUser($_POST['uid'], $_POST['token']);
-        $result['user'] = $user;
+        $container['user'] = $user;
 
         header('Content-Type: application/json');
-        echo json_encode($result);
-        $this->logs->debug($result);
+        echo json_encode($container);
+        $this->logs->debug($container);
 
         exit;
     }
@@ -82,7 +86,8 @@ class Users
     {
         $query = new WP_Query([
             'title' => $uid,
-            'post_type' => $this->slug
+            'post_type' => $this->slug,
+            'post_status' => 'draft,publish'
         ]);
 
         if ($query->have_posts()) {

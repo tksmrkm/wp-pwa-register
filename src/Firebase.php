@@ -8,6 +8,10 @@ class Firebase
     const CUSTOMIZER_KEY_API_KEY = 'api-key';
     const CUSTOMIZER_KEY_PROJECT_ID = 'project-id';
     const CUSTOMIZER_KEY_SENDER_ID = 'sender-id';
+
+    /**
+     * @deprecated since 2024-06
+     */
     const CUSTOMIZER_KEY_SERVER_KEY = 'server-key';
 
     private Customizer $customizer;

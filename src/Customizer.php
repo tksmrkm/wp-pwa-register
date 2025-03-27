@@ -155,7 +155,7 @@ class Customizer
                 'label' => 'Server Key'
             ]
         ],
-        NotificationHttpV1::CUSTOMIZER_CONFIG_PATH_KEY => [
+        GoogleClient::CUSTOMIZER_CONFIG_PATH_KEY => [
             'control_option' => [
                 'section' => 'firebase',
                 'label' => 'Certs JSON PATH',
