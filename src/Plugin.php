@@ -36,6 +36,7 @@ class Plugin
         // new Notifications\Post();
         // new Notifications\NotificationInstance($container['logs'], $container['customizer']);
         new Notifications\Option($container['customizer'], $container['subscribe'], $container['logs']);
+        new Notifications\Resubscription($container['customizer'], $container['subscribe'], $container['logs']);
         new Notifications\NotificationHttpV1($container['logs'], $container['customizer'], $container['google_client']);
         MetaBoxes\PushFlag::getInstance();
         Head::getInstance($container);
