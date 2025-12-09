@@ -313,7 +313,25 @@ class Customizer
             'option' => [
                 'default' => 'pwa_notifications'
             ]
-        ]
+        ],
+        'notifications_' . NotificationHttpV1::META_HEADLINE => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'Meta Headline Default Value'
+            ],
+        ],
+        'notifications_' . NotificationHttpV1::META_ICON => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'Meta Icon Default Value'
+            ],
+        ],
+        'notifications_' . NotificationHttpV1::META_LINK => [
+            'control_option' => [
+                'section' => 'notification',
+                'label' => 'Meta Link Default Value'
+            ],
+        ],
     ];
 
     public function init()

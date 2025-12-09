@@ -2,12 +2,14 @@
 
 namespace WpPwaRegister\Notifications;
 
-use GuzzleHttp\ClientInterface;
 use WP_Post;
 use WpPwaRegister\Logs;
 use WpPwaRegister\Customizer;
 use WpPwaRegister\Firebase;
 use WpPwaRegister\GoogleClient;
+
+use const WpPwaRegister\ROOT;
+use const WpPwaRegister\DS;
 
 class NotificationHttpV1
 {
@@ -17,6 +19,7 @@ class NotificationHttpV1
     const META_LINK = 'link';
     const TOPIC_ALL = 'all';
     const DELETION_COLUMN_KEY = 'deletion';
+    const META_BOX_KEY = 'meta_box';
 
     private Logs $logs;
     private Customizer $customizer;
@@ -31,6 +34,39 @@ class NotificationHttpV1
         add_action('init', [$this, 'register']);
         add_action('publish_' . self::POST_SLUG, [$this, 'publish'], 10, 2);
         add_action('rest_api_init', [$this, 'restApiInit']);
+        add_action('admin_init', [$this, 'adminInit']);
+        add_action('save_post_' . self::POST_SLUG, [$this, 'savePost']);
+    }
+
+    public function savePost($post_id)
+    {
+        if (
+            isset($_POST["http_v1_" . self::META_HEADLINE])
+            && isset($_POST["http_v1_" . self::META_ICON])
+            && isset($_POST["http_v1_" . self::META_LINK])
+        ) {
+            update_post_meta($post_id, self::META_HEADLINE, $_POST["http_v1_" . self::META_HEADLINE]);
+            update_post_meta($post_id, self::META_ICON, $_POST["http_v1_" . self::META_ICON]);
+            update_post_meta($post_id, self::META_LINK, $_POST["http_v1_" . self::META_LINK]);
+        }
+    }
+
+    public function adminInit()
+    {
+        add_meta_box(self::class . self::META_BOX_KEY, "Set meta", [$this, 'addMetaBox'], self::POST_SLUG);
+    }
+
+    public function addMetaBox()
+    {
+        $id = $_GET["post"] ?? null;
+        $default_headline = $this->customizer->get_theme_mod('notifications_' . self::META_HEADLINE);
+        $default_icon = $this->customizer->get_theme_mod('notifications_' . self::META_ICON);
+        $default_link = $this->customizer->get_theme_mod('notifications_' . self::META_LINK);
+        $headline = $id ? get_post_meta($id, self::META_HEADLINE, true): $default_headline;
+        $icon = $id ? get_post_meta($id, self::META_ICON, true): $default_icon;
+        $link = $id ? get_post_meta($id, self::META_LINK, true): $default_link;
+
+        include_once ROOT . DS . 'templates' . DS . 'meta_boxes' . DS . 'create_http_v1.php';
     }
 
     public function updateCallback($value, $post)
@@ -60,9 +96,18 @@ class NotificationHttpV1
     public function publish($post_id, WP_Post $post)
     {
         $title = $post->post_title;
-        $headline = get_post_meta($post_id, self::META_HEADLINE, true);
-        $icon = get_post_meta($post_id, self::META_ICON, true);
-        $link = get_post_meta($post_id, self::META_LINK, true);
+        $headline = $_POST["http_v1_" . self::META_HEADLINE] ?? get_post_meta($post_id, self::META_HEADLINE, true);
+        $icon = $_POST["http_v1_" . self::META_ICON] ?? get_post_meta($post_id, self::META_ICON, true);
+        $link = $_POST["http_v1_" . self::META_LINK] ?? get_post_meta($post_id, self::META_LINK, true);
+
+        if (!$headline || !$icon || !$link) {
+            $this->logs->debug([
+                "msg" => "skip send notification, required params are not set",
+                [$headline, $icon, $link]
+            ]);
+
+            return false;
+        }
 
         $data = [
             'message' => [
@@ -111,8 +156,37 @@ class NotificationHttpV1
             'show_ui' => true,
             'supports' => [
                 'title',
-                'custom-fields'
+                'custom-fields',
+                'editor'
             ]
+        ]);
+
+        $default_headline = $this->customizer->get_theme_mod('notifications_' . self::META_HEADLINE);
+        $default_icon = $this->customizer->get_theme_mod('notifications_' . self::META_ICON);
+        $default_link = $this->customizer->get_theme_mod('notifications_' . self::META_LINK);
+
+        register_post_meta(self::POST_SLUG, self::META_HEADLINE, [
+            "type" => "string",
+            "label" => "Headline",
+            "single" => true,
+            "show_in_rest" => true,
+            "default" => $default_headline
+        ]);
+
+        register_post_meta(self::POST_SLUG, self::META_ICON, [
+            "type" => "string",
+            "label" => "Icon",
+            "single" => true,
+            "show_in_rest" => true,
+            "default" => $default_icon
+        ]);
+
+        register_post_meta(self::POST_SLUG, self::META_LINK, [
+            "type" => "string",
+            "label" => "Link",
+            "single" => true,
+            "show_in_rest" => true,
+            "default" => $default_link
         ]);
     }
 }
